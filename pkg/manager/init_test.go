@@ -42,3 +42,31 @@ func TestOpenDatabase(t *testing.T) {
     }
     os.Remove(tempDatabase)
 }
+
+func TestCreateTree(t *testing.T) {
+    tempBaseDir, err := os.MkdirTemp("", "test*")
+    if err != nil {
+        t.Fatal(err)
+    }
+    defer os.RemoveAll(tempBaseDir)
+    t.Log(tempBaseDir)
+    CreateTree(tempBaseDir)
+    postsPath := filepath.Join(tempBaseDir, "posts")
+    scriptsPath := filepath.Join(tempBaseDir, SCRIPTS_PATH)
+    cssPath := filepath.Join(tempBaseDir, CSS_PATH)
+    if info, err := os.Lstat(postsPath); err != nil {
+        t.Fatal(err)
+    } else if info.IsDir() == false {
+        t.Fatal(postsPath + " is not a dir")
+    }
+    if info, err := os.Lstat(scriptsPath); err != nil {
+        t.Fatal(err)
+    } else if info.IsDir() == false {
+        t.Fatal(scriptsPath + " is not a dir")
+    }
+    if info, err := os.Lstat(cssPath); err != nil {
+        t.Fatal(err)
+    } else if info.IsDir() == false {
+        t.Fatal(cssPath + " is not a dir")
+    }
+}
