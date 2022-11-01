@@ -13,17 +13,34 @@ CREATE TABLE IF NOT EXISTS Category (
                  NOT NULL
 );
 
-
 -- Table: Config
 CREATE TABLE IF NOT EXISTS Config (
-    version        INTEGER DEFAULT (0),
-    title          TEXT    DEFAULT [Your Website],
-    posts_per_page INTEGER DEFAULT (3),
-    output_path    TEXT    DEFAULT output,
+    version        INTEGER DEFAULT (0)
+                           NOT NULL,
+    title          TEXT    DEFAULT [Your Website]
+                           NOT NULL,
+    posts_per_page INTEGER DEFAULT (3)
+                           NOT NULL,
+    output_path    TEXT    DEFAULT output
+                           NOT NULL,
     lang           TEXT    DEFAULT en
                            NOT NULL
 );
 
+INSERT INTO Config (
+                       version,
+                       title,
+                       posts_per_page,
+                       output_path,
+                       lang
+                   )
+                   VALUES (
+                       0,
+                       'Your Website',
+                       3,
+                       'output',
+                       'en'
+                   );
 
 -- Table: ConfigCSS
 CREATE TABLE IF NOT EXISTS ConfigCSS (
