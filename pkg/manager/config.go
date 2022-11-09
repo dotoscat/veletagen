@@ -43,3 +43,22 @@ func SetPostsPerPage(db *sql.DB, postsPerPage int64) error {
     _, err := db.Exec(QUERY, postsPerPage)
     return err
 }
+
+func GetLang(db *sql.DB) (string, error) {
+    const QUERY = "SELECT lang FROM Config"
+    var lang string
+    row := db.QueryRow(QUERY)
+    if row.Err() != nil {
+        return "", row.Err()
+    }
+    if err := row.Scan(&lang); err != nil {
+        return "", err
+    }
+    return lang, nil
+}
+
+func SetLang(db *sql.DB, lang string) error {
+    const QUERY = "UPDATE Config SET lang = ?"
+    _, err := db.Exec(QUERY, lang)
+    return err
+}

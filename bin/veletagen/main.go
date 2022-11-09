@@ -16,6 +16,8 @@ func main() {
     var setTitle string
     var getPostsPerPage bool
     var setPostsPerPage int64
+    var getLang bool
+    var setLang string
 
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
@@ -23,6 +25,8 @@ func main() {
     flag.StringVar(&setTitle, "set-title", "", "Set the title to be used for building.")
     flag.BoolVar(&getPostsPerPage, "get-posts-per-page", false, "Get the number of posts per page.")
     flag.Int64Var(&setPostsPerPage, "set-posts-per-page", 0, "Set the number of posts per page.")
+    flag.BoolVar(&getLang, "get-lang", false, "Gets the site main lang.")
+    flag.StringVar(&setLang, "set-lang", "", "Sets the site main lang.")
 
     flag.Parse()
 
@@ -77,6 +81,19 @@ func main() {
             log.Fatal(err)
         } else {
             fmt.Printf("posts-per-page:%v\n", postsPerPage)
+        }
+    }
+
+    if setLang != "" {
+        if err := manager.SetLang(db, setLang); err != nil {
+            log.Fatal(err)
+        }
+    }
+    if getLang == true {
+        if lang, err := manager.GetLang(db); err != nil {
+            log.Fatal(err)
+        } else {
+            fmt.Printf("lang:%v\n", lang)
         }
     }
 
