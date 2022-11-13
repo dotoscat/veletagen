@@ -5,6 +5,7 @@ import (
     "flag"
     "log"
     "fmt"
+    "strings"
 
     "github.com/dotoscat/veletagen/pkg/manager"
 )
@@ -18,15 +19,25 @@ func main() {
     var setPostsPerPage int64
     var getLang bool
     var setLang string
+    var addCSS string
+    var removeCSS string
+    var getCSS bool
 
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
+
     flag.BoolVar(&getTitle, "get-title", false, "Get title used for building.")
     flag.StringVar(&setTitle, "set-title", "", "Set the title to be used for building.")
+
     flag.BoolVar(&getPostsPerPage, "get-posts-per-page", false, "Get the number of posts per page.")
     flag.Int64Var(&setPostsPerPage, "set-posts-per-page", 0, "Set the number of posts per page.")
+
     flag.BoolVar(&getLang, "get-lang", false, "Gets the site main lang.")
     flag.StringVar(&setLang, "set-lang", "", "Sets the site main lang.")
+
+    flag.StringVar(&addCSS, "add-CSS", "", "Add a CSS file to be used for the whole website.")
+    flag.StringVar(&removeCSS, "remove-CSS", "", "Remove a CSS file to be used for the whole website.")
+    flag.BoolVar(&getCSS, "get-CSS", false, "Get CSS files added to the website.")
 
     flag.Parse()
 
@@ -94,6 +105,24 @@ func main() {
             log.Fatal(err)
         } else {
             fmt.Printf("lang:%v\n", lang)
+        }
+    }
+
+    if addCSS != "" {
+        if err := manager.AddCSS(db, addCSS); err != nil {
+            log.Fatal(err)
+        }
+    } else if removeCSS != "" {
+        if err := manager.RemoveCSS(db, removeCSS); err != nil {
+            log.Fatal(err)
+        }
+    }
+
+    if getCSS == true {
+        if cssList, err := manager.GetCSS(db); err != nil {
+            log.Fatal(err)
+        } else {
+            fmt.Printf("CSS:%v\n", strings.Join(cssList, ","))
         }
     }
 

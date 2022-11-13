@@ -62,3 +62,34 @@ func SetLang(db *sql.DB, lang string) error {
     _, err := db.Exec(QUERY, lang)
     return err
 }
+
+func AddCSS (db *sql.DB, filename string) error {
+    return InsertStringInto(db, "ConfigCSS", "filename", filename)
+}
+
+func RemoveCSS(db *sql.DB, filename string) error {
+    return RemoveStringFrom(db, "ConfigCSS", "filename", filename)
+}
+
+func GetCSS(db *sql.DB) ([]string, error) {
+    const QUERY = "SELECT filename FROM ConfigCSS"
+    var rows *sql.Rows
+    var err error
+    rows, err = db.Query(QUERY)
+    defer rows.Close()
+    if rows, err = db.Query(QUERY); err != nil {
+        return []string{}, err
+    } else {
+        var filename string
+        list := make([]string, 0)
+        for rows.Next() {
+            if errRows := rows.Scan(&filename); errRows != nil {
+                return []string{}, errRows
+            } else {
+                list = append(list, filename)
+            }
+        }
+        return list, nil
+    }
+    return []string{}, nil
+}
