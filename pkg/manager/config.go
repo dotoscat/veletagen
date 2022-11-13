@@ -93,3 +93,15 @@ func GetCSS(db *sql.DB) ([]string, error) {
     }
     return []string{}, nil
 }
+
+func AddScript(db *sql.DB, filename string) error {
+    return InsertStringInto(db, "ConfigScript", "filename", filename)
+}
+
+func RemoveScript(db *sql.DB, filename string) error {
+    return RemoveStringFrom(db, "ConfigScript", "filename", filename)
+}
+
+func GetScripts(db *sql.DB) ([]string, error) {
+    return SelectAllStringsFrom(db, "ConfigScript", "filename")
+}

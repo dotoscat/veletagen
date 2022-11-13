@@ -13,15 +13,23 @@ import (
 func main() {
     var init string
     var target string
+
     var getTitle bool
     var setTitle string
+
     var getPostsPerPage bool
     var setPostsPerPage int64
+
     var getLang bool
     var setLang string
+
     var addCSS string
     var removeCSS string
     var getCSS bool
+
+    var addScript string
+    var removeScript string
+    var getScripts bool
 
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
@@ -38,6 +46,10 @@ func main() {
     flag.StringVar(&addCSS, "add-CSS", "", "Add a CSS file to be used for the whole website.")
     flag.StringVar(&removeCSS, "remove-CSS", "", "Remove a CSS file to be used for the whole website.")
     flag.BoolVar(&getCSS, "get-CSS", false, "Get CSS files added to the website.")
+
+    flag.StringVar(&addScript, "add-script", "", "Add a JavaScript file to be used for the whole website.")
+    flag.StringVar(&removeScript, "remove-script", "", "Remove a JavaScript file to be used for the whole website.")
+    flag.BoolVar(&getScripts, "get-scripts", false, "Get JavaScript files added to the website.")
 
     flag.Parse()
 
@@ -123,6 +135,24 @@ func main() {
             log.Fatal(err)
         } else {
             fmt.Printf("CSS:%v\n", strings.Join(cssList, ","))
+        }
+    }
+
+    if addScript != "" {
+        if err := manager.AddScript(db, addScript); err != nil {
+            log.Fatal(err)
+        }
+    } else if removeScript != "" {
+        if err := manager.RemoveScript(db, removeScript); err != nil {
+            log.Fatal(err)
+        }
+    }
+
+    if getScripts == true {
+        if scriptList, err := manager.GetScripts(db); err != nil {
+            log.Fatal(err)
+        } else {
+            fmt.Printf("Scripts:%v\n", strings.Join(scriptList, ","))
         }
     }
 
