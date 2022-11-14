@@ -31,6 +31,10 @@ func main() {
     var removeScript string
     var getScripts bool
 
+    var addPost string
+    var removePost string
+    //var getPosts bool
+
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
 
@@ -51,6 +55,9 @@ func main() {
     flag.StringVar(&removeScript, "remove-script", "", "Remove a JavaScript file to be used for the whole website.")
     flag.BoolVar(&getScripts, "get-scripts", false, "Get JavaScript files added to the website.")
 
+    flag.StringVar(&addPost, "add-post", "", "Add a post file to be used for the whole website.")
+    flag.StringVar(&removePost, "remove-post", "", "Remove a post file to be used for the whole website.")
+
     flag.Parse()
 
     if init != "" {
@@ -63,6 +70,7 @@ func main() {
         if _, errOpenDatabase := manager.OpenDatabase(dbPath); errOpenDatabase != nil {
             log.Fatal(errOpenDatabase)
         }
+        return
     }
 
     if target == "" {
@@ -153,6 +161,16 @@ func main() {
             log.Fatal(err)
         } else {
             fmt.Printf("Scripts:%v\n", strings.Join(scriptList, ","))
+        }
+    }
+
+    if addPost != "" {
+        if err := manager.AddPost(db, addPost); err != nil {
+            log.Fatal(err)
+        }
+    } else if removePost != "" {
+        if err := manager.RemovePost(db, removePost); err != nil {
+            log.Fatal(err)
         }
     }
 
