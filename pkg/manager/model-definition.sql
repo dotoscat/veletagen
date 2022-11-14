@@ -63,7 +63,8 @@ CREATE TABLE IF NOT EXISTS Post (
     id       INTEGER  PRIMARY KEY,
     filename TEXT     UNIQUE
                       NOT NULL,
-    title    TEXT     NOT NULL,
+    title    TEXT       DEFAULT [Post title]
+                        NOT NULL,
     date     DATETIME NOT NULL
                       DEFAULT (CURRENT_DATE) 
 );
