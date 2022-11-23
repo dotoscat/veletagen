@@ -35,6 +35,10 @@ func main() {
     var removePost string
     //var getPosts bool
 
+    var post string
+    var addTags Tags
+    //var removeTags Tags
+
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
 
@@ -57,6 +61,9 @@ func main() {
 
     flag.StringVar(&addPost, "add-post", "", "Add a post file to be used for the whole website.")
     flag.StringVar(&removePost, "remove-post", "", "Remove a post file to be used for the whole website.")
+
+    flag.Var(&addTags, "add-tags", "Set an array of tags separated by ','")
+    flag.StringVar(&post, "post", "", "Post to manipulate.")
 
     flag.Parse()
 
@@ -172,6 +179,15 @@ func main() {
         if err := manager.RemovePost(db, removePost); err != nil {
             log.Fatal(err)
         }
+    }
+
+    if addTags.String() != "" {
+        if post == "" {
+            log.Println("Please, specify what post you want to add to.")
+        } else {
+
+        }
+        log.Println(addTags)
     }
 
     log.Println("END")

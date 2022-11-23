@@ -51,3 +51,15 @@ func RemoveStringFrom(db *sql.DB, table, column, value string) error {
     _, err := db.Exec(query, value)
     return err
 }
+
+func DoesStringExistIn(db *sql.DB, table, column, value string) (bool, error) {
+    query := fmt.Sprintf("SELECT COUNT(*) > 0 FROM %v WHERE %v = ?", table, column)
+    row := db.QueryRow(query, value)
+    var exists bool
+    err := row.Scan(&exists)
+    return exists, err
+}
+
+//func AddManyStringsToOneString(db *sql.DB, table, single string, members []string) error {
+//
+//}
