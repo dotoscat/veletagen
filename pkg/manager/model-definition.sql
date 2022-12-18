@@ -117,10 +117,12 @@ CREATE TABLE IF NOT EXISTS PostScript (
 
 -- Table: PostTag
 CREATE TABLE IF NOT EXISTS PostTag (
+    id       INTEGER PRIMARY KEY,
     post_id  INTEGER REFERENCES Post (id) ON DELETE CASCADE
                                           ON UPDATE CASCADE,
     post_tag INTEGER REFERENCES Tag (id) ON DELETE CASCADE
-                                         ON UPDATE CASCADE
+                                         ON UPDATE CASCADE,
+    UNIQUE(post_id, post_tag)
 );
 
 
