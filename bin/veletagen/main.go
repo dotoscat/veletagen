@@ -8,6 +8,7 @@ import (
     "strings"
 
     "github.com/dotoscat/veletagen/pkg/manager"
+    "github.com/dotoscat/veletagen/pkg/common"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
     //var getPosts bool
 
     var post string
-    var addTags Tags
+    var addTags common.Tags
     //var removeTags Tags
 
     flag.StringVar(&init, "init", "", "init <path>.")
@@ -81,7 +82,7 @@ func main() {
     }
 
     if target == "" {
-        flag.PrintDefaults()
+        log.Println("Don't forget the target. Use -target=<path>")
         return
     }
 
@@ -183,11 +184,11 @@ func main() {
 
     if addTags.String() != "" {
         if post == "" {
-            log.Println("Please, specify what post you want to add to.")
-        } else {
-
+            log.Fatal("Please, specify what post you want to add to.")
+        } else if err := manager.AddTagsToPost(db, post, addTags); err != nil {
+            log.Fatal(err)
         }
-        log.Println(addTags)
+        log.Println(addTags.String())
     }
 
     log.Println("END")

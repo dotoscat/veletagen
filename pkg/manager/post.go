@@ -2,8 +2,11 @@ package manager
 
 import (
     "database/sql"
-    //"errors"
-    //"fmt"
+    "errors"
+    "fmt"
+    "log"
+
+    "github.com/dotoscat/veletagen/pkg/common"
 )
 
 func AddPost(db *sql.DB, filename string) error {
@@ -27,14 +30,21 @@ func RemoveTag(db *sql.DB, name string) error {
     return RemoveStringFrom(db, "Tag", "name", name)
 }
 
-/*
-func AddTagsToPost(db *sql.DB, filename string, tags []string) error{
+func AddTagsToPost(db *sql.DB, filename string, tags common.Tags) error{
     if exists, err := DoesStringExistIn(db, "Post", "filename", filename); err != nil {
         return err
-    } else exists == false {
-        return errors.New(fmt.Sprintf("'%v' post does not exist.\n", filename))
+    } else if exists == false {
+        return errors.New(fmt.Sprintf("Post '%v' post does not exist.\n", filename))
+    } else if exists == true {
+        for _, tag := range tags.Tags() {
+            AddTag(db, tag)
+            fmt.Println("Add tag", tag)
+        }
+        query := fmt.Sprintf("INSERT INTO PostTag (post_id, post_tag) SELECT (SELECT id FROM Post WHERE filename = ?), id FROM Tag WHERE name IN (%v)", tags.String())
+        if _, execErr := db.Exec(query, filename); execErr != nil {
+            return execErr
+        }
+        log.Println("Query: ", query, filename)
     }
-    query := fmt.Sprintf
-    return true, nil
+    return nil
 }
-*/
