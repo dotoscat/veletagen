@@ -48,3 +48,25 @@ func AddTagsToPost(db *sql.DB, filename string, tags common.Tags) error{
     }
     return nil
 }
+
+func GetTagsFromPost(db *sql.DB, filename string) ([]string, error) {
+    const QUERY = `SELECT name as tag FROM Tag
+JOIN PostTag ON PostTag.post_tag = Tag.id
+JOIN Post ON Post.id = PostTag.post_id
+WHERE Post.filename = ?`
+    rows, err := db.Query(QUERY, filename)
+    defer rows.Close()
+    if err != nil {
+        return []string{}, err
+    }
+    tags := make([]string, 0)
+    for rows.Next() == true {
+        var tag string
+        if err := rows.Scan(&tag); err != nil {
+            return []string{}, err
+        }
+        tags = append(tags, tag)
+    }
+    return tags, nil
+}
+
