@@ -49,6 +49,25 @@ func AddTagsToPost(db *sql.DB, filename string, tags common.Tags) error{
     return nil
 }
 
+func RemoveTagsFromPost(db *sql.DB, filename string, tags common.Tags) error {
+    if exists, err := DoesStringExistIn(db, "Post", "filename", filename); err != nil {
+        return err
+    } else if exists == false {
+        return errors.New(fmt.Sprintf("Post '%v' post does not exist.\n", filename))
+    } else if exists == true {
+        query := fmt.Sprintf(`DELETE FROM PostTag WHERE PostTag.id IN
+            (SELECT PostTag.id FROM PostTag
+            JOIN Post ON Post.id = PostTag.post_id
+            JOIN Tag ON Tag.id = PostTag.tag_id
+            WHERE Post.filename = ? AND
+            Tag.name IN (%v));`, tags.String())
+        if _, execErr := db.Exec(query, filename); execErr != nil {
+            return execErr
+        }
+    }
+    return nil
+}
+
 func GetTagsFromPost(db *sql.DB, filename string) ([]string, error) {
     const QUERY = `SELECT name as tag FROM Tag
 JOIN PostTag ON PostTag.tag_id = Tag.id

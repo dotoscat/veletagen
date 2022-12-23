@@ -39,7 +39,7 @@ func main() {
     var post string
     var addTags common.Tags
     var getTags bool
-    //var removeTags Tags
+    var removeTags common.Tags
 
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
@@ -65,6 +65,7 @@ func main() {
     flag.StringVar(&removePost, "remove-post", "", "Remove a post file to be used for the whole website.")
 
     flag.Var(&addTags, "add-tags", "Set an array of tags separated by ','")
+    flag.Var(&removeTags, "remove-tags", "Remove an array of tags separated by ','")
     flag.BoolVar(&getTags, "get-tags", false, "Gets tags related with this post.")
     flag.StringVar(&post, "post", "", "Post to manipulate.")
 
@@ -191,6 +192,12 @@ func main() {
             log.Fatal(err)
         }
         log.Println(addTags.String())
+    } else if removeTags.String() != "" {
+        if post == "" {
+            log.Fatal("Please, specify what post you want to remove from.")
+        } else if err := manager.RemoveTagsFromPost(db, post, removeTags); err != nil {
+            log.Fatal(err)
+        }
     }
     if getTags == true {
         if post == "" {
@@ -198,7 +205,7 @@ func main() {
         } else if tags, err := manager.GetTagsFromPost(db, post); err != nil{
             log.Fatal(err)
         } else {
-            log.Println(tags)
+            fmt.Println(tags)
         }
     }
 
