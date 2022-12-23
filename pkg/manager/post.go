@@ -40,7 +40,7 @@ func AddTagsToPost(db *sql.DB, filename string, tags common.Tags) error{
             AddTag(db, tag)
             fmt.Println("Add tag", tag)
         }
-        query := fmt.Sprintf("INSERT INTO PostTag (post_id, post_tag) SELECT (SELECT id FROM Post WHERE filename = ?), id FROM Tag WHERE name IN (%v)", tags.String())
+        query := fmt.Sprintf("INSERT INTO PostTag (post_id, tag_id) SELECT (SELECT id FROM Post WHERE filename = ?), id FROM Tag WHERE name IN (%v)", tags.String())
         if _, execErr := db.Exec(query, filename); execErr != nil {
             return execErr
         }
@@ -51,7 +51,7 @@ func AddTagsToPost(db *sql.DB, filename string, tags common.Tags) error{
 
 func GetTagsFromPost(db *sql.DB, filename string) ([]string, error) {
     const QUERY = `SELECT name as tag FROM Tag
-JOIN PostTag ON PostTag.post_tag = Tag.id
+JOIN PostTag ON PostTag.tag_id = Tag.id
 JOIN Post ON Post.id = PostTag.post_id
 WHERE Post.filename = ?`
     rows, err := db.Query(QUERY, filename)
