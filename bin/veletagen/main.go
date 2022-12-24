@@ -37,9 +37,14 @@ func main() {
     //var getPosts bool
 
     var post string
+
     var addTags common.Tags
     var getTags bool
     var removeTags common.Tags
+
+    var addCategories common.Tags
+    var getCategories bool
+    var removeCategories common.Tags
 
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
@@ -64,10 +69,15 @@ func main() {
     flag.StringVar(&addPost, "add-post", "", "Add a post file to be used for the whole website.")
     flag.StringVar(&removePost, "remove-post", "", "Remove a post file to be used for the whole website.")
 
+    flag.StringVar(&post, "post", "", "Post to manipulate.")
+
     flag.Var(&addTags, "add-tags", "Set an array of tags separated by ','")
     flag.Var(&removeTags, "remove-tags", "Remove an array of tags separated by ','")
     flag.BoolVar(&getTags, "get-tags", false, "Gets tags related with this post.")
-    flag.StringVar(&post, "post", "", "Post to manipulate.")
+
+    flag.Var(&addCategories, "add-categories", "Add categories separated by ','")
+    flag.Var(&removeCategories, "remove-categories", "Remove categories separated by ','")
+    flag.BoolVar(&getCategories, "get-categories", false, "Gets categories related with this post.")
 
     flag.Parse()
 
@@ -194,18 +204,41 @@ func main() {
         log.Println(addTags.String())
     } else if removeTags.String() != "" {
         if post == "" {
-            log.Fatal("Please, specify what post you want to remove from.")
+            log.Fatal("Please, specify what post you want to remove tags from.")
         } else if err := manager.RemoveTagsFromPost(db, post, removeTags); err != nil {
             log.Fatal(err)
         }
     }
     if getTags == true {
         if post == "" {
-            log.Fatal("Please, specify what post you want to get from")
+            log.Fatal("Please, specify what post you want to get tags from.")
         } else if tags, err := manager.GetTagsFromPost(db, post); err != nil{
             log.Fatal(err)
         } else {
             fmt.Println(tags)
+        }
+    }
+
+    if addCategories.String() != "" {
+        if post == "" {
+            log.Fatal("Please, specify what post you want to add to categories.")
+        } else if err := manager.AddCategoriesToPost(db, post, addCategories); err != nil {
+            log.Fatal(err)
+        }
+    } else if removeCategories.String() != "" {
+        if post == "" {
+            log.Fatal("Please, specify what post you want to remove categories from.")
+        } else if err := manager.RemoveCategoriesFromPost(db, post, removeCategories); err != nil {
+            log.Fatal(err)
+        }
+    }
+    if getCategories == true {
+        if post == "" {
+            log.Fatal("Plase, specify what post you want to get categories from.")
+        } else if categories, err := manager.GetCategoriesFromPost(db, post); err != nil {
+            log.Fatal(err)
+        } else {
+            fmt.Println(categories)
         }
     }
 

@@ -72,10 +72,12 @@ CREATE TABLE IF NOT EXISTS Post (
 
 -- Table: PostCategory
 CREATE TABLE IF NOT EXISTS PostCategory (
+    id       INTEGER PRIMARY KEY,
     post_id       INTEGER REFERENCES Post (id) ON DELETE CASCADE
                                                ON UPDATE CASCADE,
-    post_category INTEGER REFERENCES Category (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE
+    category_id INTEGER REFERENCES Category (id) ON DELETE CASCADE
+                                                   ON UPDATE CASCADE,
+    UNIQUE (post_id, category_id)
 );
 
 
