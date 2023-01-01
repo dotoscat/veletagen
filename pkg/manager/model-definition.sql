@@ -24,23 +24,12 @@ CREATE TABLE IF NOT EXISTS Config (
     output_path    TEXT    DEFAULT output
                            NOT NULL,
     lang           TEXT    DEFAULT en
+                           NOT NULL,
+    license         TEXT   DEFAULT []
                            NOT NULL
 );
 
-INSERT INTO Config (
-                       version,
-                       title,
-                       posts_per_page,
-                       output_path,
-                       lang
-                   )
-                   VALUES (
-                       0,
-                       'Your Website',
-                       3,
-                       'output',
-                       'en'
-                   );
+INSERT INTO Config DEFAULT VALUES;
 
 -- Table: ConfigCSS
 CREATE TABLE IF NOT EXISTS ConfigCSS (

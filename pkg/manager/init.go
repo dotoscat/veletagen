@@ -4,17 +4,29 @@ import (
     "database/sql"
     "path/filepath"
     "os"
+    "errors"
     "io/fs"
+
     _ "github.com/mattn/go-sqlite3"
 )
 
 func OpenDatabase(path string) (*sql.DB, error) {
+    // Check if database exists, if not exists then execute model definition
+    var execModelDefinition bool
+    _, statErr := os.Stat(path)
+    if errors.Is(statErr, fs.ErrNotExist) == true {
+        execModelDefinition = true
+    } else if statErr != nil {
+        return nil, statErr
+    }
     db, err := sql.Open("sqlite3", path)
     if err != nil {
         return nil, err
     }
-    if _, err := db.Exec(modelDefinition); err != nil {
-        return nil, err
+    if execModelDefinition == true {
+        if _, err := db.Exec(modelDefinition); err != nil {
+            return nil, err
+        }
     }
     return db, nil
 }
