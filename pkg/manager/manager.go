@@ -10,6 +10,8 @@ import (
 
     _ "embed"
     _ "github.com/mattn/go-sqlite3"
+
+    "github.com/dotoscat/veletagen/pkg/common"
 )
 
 //go:embed model-definition.sql
@@ -63,3 +65,18 @@ func DoesStringExistIn(db *sql.DB, table, column, value string) (bool, error) {
 //func AddManyStringsToOneString(db *sql.DB, table, single string, members []string) error {
 //
 //}
+
+func GetWebsiteBase(db *sql.DB) (common.WebsiteBase, error) {
+    const QUERY = "SELECT title, posts_per_page, output_path, lang, license FROM Config"
+    var website common.WebsiteBase
+    row := db.QueryRow(QUERY)
+    err := row.Scan(
+        &website.Title,
+        &website.PostsPerPage,
+        &website.OutputPath,
+        &website.Lang,
+        &website.License,
+    )
+    return website, err
+}
+

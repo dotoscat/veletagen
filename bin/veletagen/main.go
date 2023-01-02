@@ -7,11 +7,14 @@ import (
     "fmt"
     "strings"
 
-    "github.com/dotoscat/veletagen/pkg/manager"
     "github.com/dotoscat/veletagen/pkg/common"
+    "github.com/dotoscat/veletagen/pkg/manager"
+    "github.com/dotoscat/veletagen/pkg/constructor"
 )
 
 func main() {
+    var build bool
+
     var init string
     var target string
 
@@ -45,6 +48,8 @@ func main() {
     var addCategories common.Tags
     var getCategories bool
     var removeCategories common.Tags
+
+    flag.BoolVar(&build, "build", false, "Start building the site specified by target.")
 
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
@@ -104,8 +109,17 @@ func main() {
 
     db, errOpenDatabase = manager.OpenDatabase(manager.GetPathDB(target))
     defer db.Close()
+
     if errOpenDatabase != nil {
         log.Fatal(errOpenDatabase)
+    }
+
+    if build == true {
+        log.Println("Start building the site!");
+        if err := constructor.Construct(db); err != nil {
+            log.Fatal(err)
+        }
+        return
     }
 
     if setTitle != "" {
