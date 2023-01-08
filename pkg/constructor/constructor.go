@@ -18,7 +18,7 @@ import (
 var postTemplate embed.FS
 
 //go:embed templates/base.html templates/page.html
-var pageTemplate embed.FS
+var postsPageTemplate embed.FS
 
 /*
 type Webpage struct {
@@ -42,7 +42,7 @@ type PostsPage struct {
 }
 */
 
-func RenderTemplate(tmpl *template.Template, outputPath string) error {
+func RenderTemplate(tmpl *template.Template, outputPath string, data any) error {
         log.Println("Render template", tmpl);
         log.Println("to:", outputPath);
         outputFile, errFile := os.Create(outputPath)
@@ -50,7 +50,7 @@ func RenderTemplate(tmpl *template.Template, outputPath string) error {
         if errFile != nil {
             return errFile
         }
-        if err := loadedBaseTemplate.Execute(outputFile, tmpl); err != nil {
+        if err := tmpl.Execute(outputFile, data); err != nil {
             return err
         }
     return nil
@@ -71,6 +71,21 @@ func Construct(db *sql.DB, basePath string) error {
     }
     common.CreateTree(outputPath, branches)
 
+    // Load templates
+    templates := make(map[string]*template.Template)
+    log.Println("templates", templates)
+    templatesDefinition := []struct{
+        name string
+        fs embed.FS
+    }{
+        {"post", postTemplate},
+        {"postsPage", postsPageTemplate},
+    }
+
+    for _, tuple := range templatesDefinition {
+        log.Println("Load template:", tuple)
+    }
+
     indexPath := filepath.Join(outputPath, "index.html")
 
     var loadedPostTemplate *template.Template
@@ -79,7 +94,7 @@ func Construct(db *sql.DB, basePath string) error {
         return err
     }
 
-    if err := RenderTemplate(indexPath); err != nil {
+    if err := RenderTemplate(loadedPostTemplate, indexPath, website); err != nil {
         return err
     }
 
