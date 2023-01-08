@@ -42,6 +42,20 @@ type PostsPage struct {
 }
 */
 
+func RenderTemplate(tmpl *template.Template, outputPath string) error {
+        log.Println("Render template", tmpl);
+        log.Println("to:", outputPath);
+        outputFile, errFile := os.Create(outputPath)
+        defer outputFile.Close()
+        if errFile != nil {
+            return errFile
+        }
+        if err := loadedBaseTemplate.Execute(outputFile, tmpl); err != nil {
+            return err
+        }
+    return nil
+}
+
 func Construct(db *sql.DB, basePath string) error {
     var website common.WebsiteBase
     var err error
@@ -58,18 +72,15 @@ func Construct(db *sql.DB, basePath string) error {
     common.CreateTree(outputPath, branches)
 
     indexPath := filepath.Join(outputPath, "index.html")
-    if loadedBaseTemplate, err := template.ParseFS(postTemplate, "templates/*"); err != nil {
+
+    var loadedPostTemplate *template.Template
+    loadedPostTemplate, err = template.ParseFS(postTemplate, "templates/*")
+    if err != nil {
         return err
-    } else {
-        log.Println("Create index file:", indexPath);
-        indexFile, errFile := os.Create(indexPath)
-        defer indexFile.Close()
-        if errFile != nil {
-            return errFile
-        }
-        if err := loadedBaseTemplate.Execute(indexFile, website); err != nil {
-            return err
-        }
+    }
+
+    if err := RenderTemplate(indexPath); err != nil {
+        return err
     }
 
     return nil
