@@ -116,7 +116,7 @@ func main() {
 
     if build == true {
         log.Println("Start building the site!");
-        if err := constructor.Construct(db); err != nil {
+        if err := constructor.Construct(db, target); err != nil {
             log.Fatal(err)
         }
         return
