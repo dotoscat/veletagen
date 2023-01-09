@@ -73,7 +73,6 @@ func Construct(db *sql.DB, basePath string) error {
 
     // Load templates
     templates := make(map[string]*template.Template)
-    log.Println("templates", templates)
     templatesDefinition := []struct{
         name string
         fs embed.FS
@@ -83,8 +82,15 @@ func Construct(db *sql.DB, basePath string) error {
     }
 
     for _, tuple := range templatesDefinition {
+        if loadedTemplate, err := template.ParseFS(tuple.fs, "templates/*"); err != nil {
+            return err
+        } else {
+            templates[tuple.name] = loadedTemplate
+        }
         log.Println("Load template:", tuple)
     }
+    log.Println("templates", templates)
+    // End loading templates
 
     indexPath := filepath.Join(outputPath, "index.html")
 
