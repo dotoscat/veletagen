@@ -27,12 +27,7 @@ type Webpage struct {
     Url string
 }
 
-type Post struct {
-    Name string
-    Filename string
-    Title string
-    Date time.Time
-}
+
 
 type PostsPage struct {
     Webpage
@@ -103,6 +98,12 @@ func Construct(db *sql.DB, basePath string) error {
     if err := RenderTemplate(loadedPostTemplate, indexPath, website); err != nil {
         return err
     }
+
+    postsPerPage, err := manager.GetPostsPages(db, 2)
+    for postsPerPage.GoNext() {
+        postsPerPage.GetPostsFromCurrentPage(db)
+    }
+    log.Println("postsPerPage:", postsPerPage)
 
     return nil
 }

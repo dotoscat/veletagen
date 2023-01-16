@@ -79,4 +79,3 @@ func GetWebsiteBase(db *sql.DB) (common.WebsiteBase, error) {
     )
     return website, err
 }
-
