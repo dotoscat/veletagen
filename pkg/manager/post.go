@@ -22,39 +22,16 @@ type PostsPages struct{
     postsPerPage int64
 }
 
-func (pp PostsPages) HasNext() bool {
-    return pp.currentPage < pp.totalPages;
+func (pp PostsPages) Next() bool {
+    return pp.currentPage < pp.totalPages
 }
 
-func (pp PostsPages) HasLast() bool {
-    return pp.currentPage > 0
-}
-
-func (pp *PostsPages) GoNext() bool {
-    if pp.HasNext() {
-        pp.currentPage++
-        return true
-    }
-    return false
-}
-
-func (pp *PostsPages) GoLast() bool {
-    if pp.HasLast() {
-        pp.currentPage--
-        return true
-    }
-    return false
-}
-
-func (pp PostsPages) CurrentPage() int64 {
-    return pp.currentPage
-}
-
-func (pp PostsPages) GetPostsFromCurrentPage(db *sql.DB) PostPage {
+func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) PostsPage {
     const QUERY = `SELECT id, filename, title, date FROM Post LIMIT %v OFFSET %v`;
     offset := pp.postsPerPage*pp.currentPage
     query := fmt.Sprintf(QUERY, pp.postsPerPage, offset)
     fmt.Println(query)
+    pp.currentPage++
     return []Post{}
 }
 
@@ -65,7 +42,7 @@ type Post struct {
     Date time.Time
 }
 
-type PostPage []Post
+type PostsPage []Post
 
 // func (pp PostsPages) GetPage(int64 page) PostPage {
 //    return PostPage{}
