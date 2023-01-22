@@ -101,7 +101,11 @@ func Construct(db *sql.DB, basePath string) error {
 
     postsPerPage, err := manager.GetPostsPages(db, 2)
     for postsPerPage.Next() {
-        postsPerPage.GetPostsFromCurrentPage(db)
+        if postsPages, err := postsPerPage.GetPostsFromCurrentPage(db); err != nil {
+            return err
+        } else {
+            log.Println(postsPages)
+        }
     }
     log.Println("postsPerPage:", postsPerPage)
 

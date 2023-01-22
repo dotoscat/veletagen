@@ -23,16 +23,42 @@ type PostsPages struct{
 }
 
 func (pp PostsPages) Next() bool {
-    return pp.currentPage < pp.totalPages
+    return pp.currentPage <= pp.totalPages
 }
 
-func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) PostsPage {
+func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
     const QUERY = `SELECT id, filename, title, date FROM Post LIMIT %v OFFSET %v`;
     offset := pp.postsPerPage*pp.currentPage
     query := fmt.Sprintf(QUERY, pp.postsPerPage, offset)
     fmt.Println(query)
+
+    posts := make([]Post, 0)
+
+    if rows, err := db.Query(query); err != nil {
+        return PostsPage{}, err
+    } else {
+        defer rows.Close()
+        for rows.Next() {
+            var post Post
+            var err error
+            if post, err = CreatePostFromRows(rows); err != nil {
+                return PostsPage{}, err
+            }
+            posts = append(posts, post)
+        }
+    }
+
+    hasNext := pp.currentPage + 1 < pp.totalPages
+    hasPrevious := pp.currentPage - 1 >= 0
+
+    postsPages := PostsPage{
+        Number: pp.currentPage,
+        Posts: posts,
+        HasNext: hasNext,
+        HasPrevious: hasPrevious,
+    }
     pp.currentPage++
-    return []Post{}
+    return postsPages, nil
 }
 
 type Post struct {
@@ -42,11 +68,24 @@ type Post struct {
     Date time.Time
 }
 
-type PostsPage []Post
+func CreatePostFromRows(rows *sql.Rows) (Post, error) {
+    var name string
+    var filename string
+    var title string
+    var date time.Time
 
-// func (pp PostsPages) GetPage(int64 page) PostPage {
-//    return PostPage{}
-//}
+    if err := rows.Scan(&name, &filename, &title, &date); err != nil {
+        return Post{}, err
+    }
+    return Post {name, filename, title, date}, nil
+}
+
+type PostsPage struct {
+    Number int64
+    Posts []Post
+    HasNext bool
+    HasPrevious bool
+}
 
 func GetPostsPages(db *sql.DB, postsPerPage int64) (PostsPages, error) {
     const COUNT_QUERY = `SELECT COUNT(*) AS total_posts
