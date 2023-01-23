@@ -6,6 +6,28 @@ import (
     _ "github.com/mattn/go-sqlite3"
 )
 
+type Config struct {
+    Title string
+    License string
+    Lang string
+    OutputPath string
+    PostsPerPage int64
+}
+
+func GetConfig(db *sql.DB) (Config, error) {
+    const QUERY = "SELECT title, posts_per_page, output_path, lang, license FROM Config"
+    var config Config
+    row := db.QueryRow(QUERY)
+    err := row.Scan(
+        &config.Title,
+        &config.PostsPerPage,
+        &config.OutputPath,
+        &config.Lang,
+        &config.License,
+    )
+    return config, err
+}
+
 func GetTitle(db *sql.DB) (string, error) {
     const QUERY = "SELECT title FROM Config"
     var title string

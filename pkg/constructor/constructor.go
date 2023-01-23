@@ -27,15 +27,10 @@ type Webpage struct {
     Url string
 }
 
-
-
-type PostsPage struct {
-    Webpage
-    LastPage *PostsPage
-    NextPage *PostsPage
-    Posts []Post
-}
 */
+//type WebpagePostsPage struct {
+//    Webpage
+//}
 
 func RenderTemplate(tmpl *template.Template, outputPath string, data any) error {
         log.Println("Render template", tmpl);
@@ -52,13 +47,13 @@ func RenderTemplate(tmpl *template.Template, outputPath string, data any) error 
 }
 
 func Construct(db *sql.DB, basePath string) error {
-    var website common.WebsiteBase
+    var config manager.Config
     var err error
-    if website, err = manager.GetWebsiteBase(db); err != nil {
+    if config, err = manager.GetConfig(db); err != nil {
         return err
     }
-    log.Println("website base:", website)
-    outputPath := website.OutputPath
+    log.Println("config base:", config)
+    outputPath := config.OutputPath
 
     branches := []string{
             "posts",
@@ -95,16 +90,25 @@ func Construct(db *sql.DB, basePath string) error {
         return err
     }
 
-    if err := RenderTemplate(loadedPostTemplate, indexPath, website); err != nil {
+    if err := RenderTemplate(loadedPostTemplate, indexPath, config); err != nil {
         return err
     }
 
     postsPerPage, err := manager.GetPostsPages(db, 2)
     for postsPerPage.Next() {
-        if postsPages, err := postsPerPage.GetPostsFromCurrentPage(db); err != nil {
+        if postsPage, err := postsPerPage.GetPostsFromCurrentPage(db); err != nil {
             return err
         } else {
-            log.Println(postsPages)
+            log.Println(postsPage)
+            for _, post := range postsPage.Posts {
+                var output string
+                log.Println(post, output) // Do something with them
+                if postsPage.Number == 0 {
+                    // index
+                } else {
+
+                }
+            }
         }
     }
     log.Println("postsPerPage:", postsPerPage)
