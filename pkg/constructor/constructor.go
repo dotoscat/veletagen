@@ -5,6 +5,8 @@ import (
     "database/sql"
     "log"
     "embed"
+    "fmt"
+    "strings"
     "path/filepath"
     "os"
     "text/template"
@@ -20,17 +22,59 @@ var postTemplate embed.FS
 //go:embed templates/base.html templates/page.html
 var postsPageTemplate embed.FS
 
-/*
-type Webpage struct {
-    Base WebsiteBase
-    Output string
-    Url string
+type Website struct {
+    Config manager.Config
+    // categories, pages, scripts, styles...
 }
 
-*/
-//type WebpagePostsPage struct {
-//    Webpage
-//}
+type Webpage struct {
+    Website Website
+    Url string // Normalize to write output
+    OutputPath string
+}
+
+func NewWebpage(website Website, url string) Webpage {
+    return Webpage{
+        Website: website,
+        Url: url,
+        OutputPath: filepath.Join(website.Config.OutputPath, url),
+    }
+}
+
+type PostsPageWebpage struct {
+    Webpage
+    PostsPage manager.PostsPage
+    Posts []PostWebpage
+}
+
+func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPageWebpage {
+    var url string
+    if postsPage.Number == 0 {
+        url = "index.html"
+    } else {
+        pageNumber := fmt.Sprintf("page%v.html", postsPage.Number + 1)
+        url = strings.Join([]string{"/pages", pageNumber}, "/")
+    }
+    webpage := NewWebpage(website, url)
+    postsWebpages := make([]PostWebpage, 0)
+    for _, aPost := range postsPage.Posts {
+        log.Println("aPost:", aPost)
+        // postUrl := string.Join([])string{"/posts"}
+    }
+    // replace extension from filename for post output
+    postsPageWebpage := PostsPageWebpage{
+        webpage,
+        postsPage,
+        postsWebpages,
+    }
+    log.Println(webpage)
+    return postsPageWebpage
+}
+
+type PostWebpage struct {
+    Webpage
+    Post *manager.Post
+}
 
 func RenderTemplate(tmpl *template.Template, outputPath string, data any) error {
         log.Println("Render template", tmpl);
@@ -53,6 +97,9 @@ func Construct(db *sql.DB, basePath string) error {
         return err
     }
     log.Println("config base:", config)
+
+    // website := Website{Config: config} //TODO: Use later
+
     outputPath := config.OutputPath
 
     branches := []string{
@@ -94,21 +141,12 @@ func Construct(db *sql.DB, basePath string) error {
         return err
     }
 
-    postsPerPage, err := manager.GetPostsPages(db, 2)
+    postsPerPage, err := manager.GetPostsPages(db, 2) //TODO: Change that 2 by the one from the Config
     for postsPerPage.Next() {
         if postsPage, err := postsPerPage.GetPostsFromCurrentPage(db); err != nil {
             return err
         } else {
             log.Println(postsPage)
-            for _, post := range postsPage.Posts {
-                var output string
-                log.Println(post, output) // Do something with them
-                if postsPage.Number == 0 {
-                    // index
-                } else {
-
-                }
-            }
         }
     }
     log.Println("postsPerPage:", postsPerPage)
