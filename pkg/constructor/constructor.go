@@ -56,18 +56,26 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
         url = strings.Join([]string{"/pages", pageNumber}, "/")
     }
     webpage := NewWebpage(website, url)
-    postsWebpages := make([]PostWebpage, 0)
+    postWebpages := make([]PostWebpage, 0)
     for _, aPost := range postsPage.Posts {
-        log.Println("aPost:", aPost)
-        // postUrl := string.Join([])string{"/posts"}
+        //log.Println("aPost:", aPost)
+        filename, _ := strings.CutSuffix(aPost.Filename, "md")
+        postUrl := strings.Join([]string{"/posts", filename + "html"}, "/")
+        webpage := NewWebpage(website, postUrl)
+        postWebpage := PostWebpage{
+            Webpage: webpage,
+            Post: &aPost,
+        }
+        //log.Println("webPost:", postWebpage)
+        postWebpages = append(postWebpages, postWebpage)
     }
     // replace extension from filename for post output
     postsPageWebpage := PostsPageWebpage{
         webpage,
         postsPage,
-        postsWebpages,
+        postWebpages,
     }
-    log.Println(webpage)
+    //log.Println("webpage posts page:", webpage)
     return postsPageWebpage
 }
 
@@ -98,7 +106,7 @@ func Construct(db *sql.DB, basePath string) error {
     }
     log.Println("config base:", config)
 
-    // website := Website{Config: config} //TODO: Use later
+    website := Website{Config: config}
 
     outputPath := config.OutputPath
 
@@ -141,15 +149,18 @@ func Construct(db *sql.DB, basePath string) error {
         return err
     }
 
-    postsPerPage, err := manager.GetPostsPages(db, 2) //TODO: Change that 2 by the one from the Config
-    for postsPerPage.Next() {
-        if postsPage, err := postsPerPage.GetPostsFromCurrentPage(db); err != nil {
+    postsPages, err := manager.GetPostsPages(db, 2) //TODO: Change that 2 by the one from the Config
+    for postsPages.Next() {
+        if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
             return err
         } else {
-            log.Println(postsPage)
+            postsPageWebpage := NewPostsPageWebpage(website, postsPage)
+            log.Print("postsPageWebpage")
+            log.Println(postsPageWebpage)
         }
     }
-    log.Println("postsPerPage:", postsPerPage)
+    log.Println("website", website)
+    log.Println("postsPerPage:", postsPages)
 
     return nil
 }

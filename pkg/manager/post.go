@@ -51,14 +51,14 @@ func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
     hasNext := pp.currentPage + 1 < pp.totalPages
     hasPrevious := pp.currentPage - 1 >= 0
 
-    postsPages := PostsPage{
+    postsPage := PostsPage{
         Number: pp.currentPage,
         Posts: posts,
         HasNext: hasNext,
         HasPrevious: hasPrevious,
     }
     pp.currentPage++
-    return postsPages, nil
+    return postsPage, nil
 }
 
 type Post struct {
