@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ .Title }}</title>
+    <title>{{ .Website.Config.Title }}</title>
     <meta charset="utf8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-  <body lang="{{ .Lang }}">
+  <body lang="{{ .Website.Config.Lang }}">
     <header>
-      <h1>{{ .Title }}</h1>
+      <h1><a href="/">{{ .Website.Config.Title }}</a></h1>
     </header>
     <nav>
+    <!--Pages-->
     </nav>
     <main>
     {{block "main" .}}{{end}}
     </main>
     <footer>
       <div id="license">
-        {{ .License }}
+        {{ .Website.Config.License }}
       </div>
     </footer>
   </body>

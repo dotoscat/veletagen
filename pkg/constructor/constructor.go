@@ -19,7 +19,7 @@ import (
 //go:embed templates/base.html templates/post.html
 var postTemplate embed.FS
 
-//go:embed templates/base.html templates/page.html
+//go:embed templates/base.html templates/postspage.html
 var postsPageTemplate embed.FS
 
 type Website struct {
@@ -45,6 +45,36 @@ type PostsPageWebpage struct {
     Webpage
     PostsPage manager.PostsPage
     Posts []PostWebpage
+}
+
+func (ppw PostsPageWebpage) GetPreviousUrl() string {
+    if ppw.PostsPage.HasPrevious == false {
+       return ""
+    }
+    if ppw.PostsPage.Number - 1 <= 0  {
+        return "/index.html"
+    }
+    url := fmt.Sprintf("/pages/page%v.html", ppw.PostsPage.Number - 1)
+    return url
+}
+
+func (ppw PostsPageWebpage) GetNextUrl() string {
+    if ppw.PostsPage.HasNext == false {
+       return ""
+    }
+    if ppw.PostsPage.Number == 0 { //index is page1
+        return "/pages/page2.html"
+    }
+    url := fmt.Sprintf("/pages/page%v.html", ppw.PostsPage.Number + 2)
+    return url
+}
+
+func (ppw PostsPageWebpage) GetPreviousNumber() int64 {
+    return ppw.PostsPage.Number - 1
+}
+
+func (ppw PostsPageWebpage) GetNextNumber() int64 {
+    return ppw.PostsPage.Number + 1
 }
 
 func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPageWebpage {
@@ -137,18 +167,6 @@ func Construct(db *sql.DB, basePath string) error {
     log.Println("templates", templates)
     // End loading templates
 
-    indexPath := filepath.Join(outputPath, "index.html")
-
-    var loadedPostTemplate *template.Template
-    loadedPostTemplate, err = template.ParseFS(postTemplate, "templates/*")
-    if err != nil {
-        return err
-    }
-
-    if err := RenderTemplate(loadedPostTemplate, indexPath, config); err != nil {
-        return err
-    }
-
     postsPages, err := manager.GetPostsPages(db, 2) //TODO: Change that 2 by the one from the Config
     for postsPages.Next() {
         if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
@@ -157,6 +175,9 @@ func Construct(db *sql.DB, basePath string) error {
             postsPageWebpage := NewPostsPageWebpage(website, postsPage)
             log.Print("postsPageWebpage")
             log.Println(postsPageWebpage)
+            if err := RenderTemplate(templates["postsPage"], postsPageWebpage.OutputPath, postsPageWebpage); err != nil {
+                return err
+            }
         }
     }
     log.Println("website", website)
