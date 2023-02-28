@@ -48,7 +48,7 @@ func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
         }
     }
 
-    hasNext := pp.currentPage + 1 < pp.totalPages
+    hasNext := pp.currentPage + 1 <= pp.totalPages
     hasPrevious := pp.currentPage - 1 >= 0
 
     postsPage := PostsPage{

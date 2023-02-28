@@ -54,7 +54,7 @@ func (ppw PostsPageWebpage) GetPreviousUrl() string {
     if ppw.PostsPage.Number - 1 <= 0  {
         return "/index.html"
     }
-    url := fmt.Sprintf("/pages/page%v.html", ppw.PostsPage.Number - 1)
+    url := fmt.Sprintf("/pages/page%v.html", ppw.PostsPage.Number - 1 + 1)
     return url
 }
 
@@ -70,10 +70,14 @@ func (ppw PostsPageWebpage) GetNextUrl() string {
 }
 
 func (ppw PostsPageWebpage) GetPreviousNumber() int64 {
-    return ppw.PostsPage.Number - 1
+    return ppw.PostsPage.Number - 1 + 1
 }
 
 func (ppw PostsPageWebpage) GetNextNumber() int64 {
+    return ppw.PostsPage.Number + 1 + 1
+}
+
+func (ppw PostsPageWebpage) Number() int64 {
     return ppw.PostsPage.Number + 1
 }
 
@@ -173,8 +177,9 @@ func Construct(db *sql.DB, basePath string) error {
             return err
         } else {
             postsPageWebpage := NewPostsPageWebpage(website, postsPage)
-            log.Print("postsPageWebpage")
-            log.Println(postsPageWebpage)
+            log.Println("postsPageWebpage Number: ", postsPageWebpage.PostsPage.Number)
+            log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
+            log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
             if err := RenderTemplate(templates["postsPage"], postsPageWebpage.OutputPath, postsPageWebpage); err != nil {
                 return err
             }
