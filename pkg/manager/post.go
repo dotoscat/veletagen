@@ -4,6 +4,7 @@ import (
     "database/sql"
     "time"
     "fmt"
+    "log"
 
     // "github.com/dotoscat/veletagen/pkg/common"
 )
@@ -27,7 +28,12 @@ func (pp PostsPages) Next() bool {
 }
 
 func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
-    const QUERY = `SELECT id, filename, title, date FROM Post LIMIT %v OFFSET %v`;
+    const QUERY = `SELECT id, filename, title, date FROM Post
+    WHERE id NOT IN
+    (SELECT PostTag.post_id FROM PostTag
+    JOIN Tag ON PostTag.tag_id = Tag.id
+    WHERE Tag.name = "page")
+    LIMIT %v OFFSET %v`;
     offset := pp.postsPerPage*pp.currentPage
     query := fmt.Sprintf(QUERY, pp.postsPerPage, offset)
     fmt.Println(query)
@@ -62,22 +68,29 @@ func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
 }
 
 type Post struct {
-    Name string
+    id int64
     Filename string
     Title string
     Date time.Time
 }
 
+func (p Post) Id() int64 {
+    return p.id
+}
+
 func CreatePostFromRows(rows *sql.Rows) (Post, error) {
-    var name string
+    var id int64
     var filename string
     var title string
     var date time.Time
 
-    if err := rows.Scan(&name, &filename, &title, &date); err != nil {
+    if err := rows.Scan(&id, &filename, &title, &date); err != nil {
         return Post{}, err
     }
-    return Post {name, filename, title, date}, nil
+    post := Post {id, filename, title, date}
+    log.Println("CreatePostFromRows: ", post)
+
+    return post, nil
 }
 
 type PostsPage struct {

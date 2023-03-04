@@ -92,7 +92,6 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
     webpage := NewWebpage(website, url)
     postWebpages := make([]PostWebpage, 0)
     for _, aPost := range postsPage.Posts {
-        //log.Println("aPost:", aPost)
         filename, _ := strings.CutSuffix(aPost.Filename, "md")
         postUrl := strings.Join([]string{"/posts", filename + "html"}, "/")
         webpage := NewWebpage(website, postUrl)
@@ -102,6 +101,7 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
         }
         //log.Println("webPost:", postWebpage)
         postWebpages = append(postWebpages, postWebpage)
+        log.Println("aPost:", aPost)
     }
     // replace extension from filename for post output
     postsPageWebpage := PostsPageWebpage{
@@ -180,6 +180,8 @@ func Construct(db *sql.DB, basePath string) error {
             log.Println("postsPageWebpage Number: ", postsPageWebpage.PostsPage.Number)
             log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
             log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
+            // Render posts from postsPage
+            // Render postsPage
             if err := RenderTemplate(templates["postsPage"], postsPageWebpage.OutputPath, postsPageWebpage); err != nil {
                 return err
             }
