@@ -24,7 +24,7 @@ type PostsPages struct{
 }
 
 func (pp PostsPages) Next() bool {
-    return pp.currentPage <= pp.totalPages
+    return pp.currentPage < pp.totalPages
 }
 
 func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
@@ -36,7 +36,6 @@ func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
     LIMIT %v OFFSET %v`;
     offset := pp.postsPerPage*pp.currentPage
     query := fmt.Sprintf(QUERY, pp.postsPerPage, offset)
-    fmt.Println(query)
 
     posts := make([]Post, 0)
 
@@ -54,7 +53,7 @@ func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
         }
     }
 
-    hasNext := pp.currentPage + 1 <= pp.totalPages
+    hasNext := pp.currentPage + 1 < pp.totalPages
     hasPrevious := pp.currentPage - 1 >= 0
 
     postsPage := PostsPage{
@@ -107,7 +106,6 @@ WHERE id NOT IN
 (SELECT PostTag.post_id FROM PostTag
 JOIN Tag ON PostTag.tag_id = Tag.id
 WHERE Tag.name = "page")`;
-    const QUERY = ``;
 
     postsPages := PostsPages{
         postsPerPage: postsPerPage,
@@ -125,6 +123,8 @@ WHERE Tag.name = "page")`;
         postsPages.totalPages++
     }
     // postsPages.postsPerPage = postsPerPage
+    log.Println("totalPosts: ", totalPosts)
+    log.Println("postsPages: ", postsPages)
 
     return postsPages, nil
 }

@@ -97,11 +97,11 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
         webpage := NewWebpage(website, postUrl)
         postWebpage := PostWebpage{
             Webpage: webpage,
-            Post: &aPost,
+            Post: aPost,
         }
         //log.Println("webPost:", postWebpage)
         postWebpages = append(postWebpages, postWebpage)
-        log.Println("aPost:", aPost)
+        // log.Println("aPost:", aPost)
     }
     // replace extension from filename for post output
     postsPageWebpage := PostsPageWebpage{
@@ -115,7 +115,7 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
 
 type PostWebpage struct {
     Webpage
-    Post *manager.Post
+    Post manager.Post
 }
 
 func RenderTemplate(tmpl *template.Template, outputPath string, data any) error {
