@@ -118,6 +118,11 @@ type PostWebpage struct {
     Post manager.Post
 }
 
+func (pw PostWebpage) Content() string {
+    // The idea here is to render markdown to html and give it as output
+    return "Post content"
+}
+
 func RenderTemplate(tmpl *template.Template, outputPath string, data any) error {
         log.Println("Render template", tmpl);
         log.Println("to:", outputPath);
@@ -181,6 +186,12 @@ func Construct(db *sql.DB, basePath string) error {
             log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
             log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
             // Render posts from postsPage
+            log.Println("Posts from postsPageWebpage: ", postsPageWebpage)
+            for _, post := range postsPageWebpage.Posts {
+                if err := RenderTemplate(templates["post"], post.OutputPath, post); err != nil {
+                    return err
+                }
+            }
             // Render postsPage
             if err := RenderTemplate(templates["postsPage"], postsPageWebpage.OutputPath, postsPageWebpage); err != nil {
                 return err
