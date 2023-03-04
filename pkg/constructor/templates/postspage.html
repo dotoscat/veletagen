@@ -1,0 +1,19 @@
+{{block "main" .}}
+    <h1>Posts Page</h1>
+    <ul>
+    {{ range .Posts }}
+        <li>{{ . }}</li>
+    {{ end }}
+    <ul>
+    <nav>
+        <ul>
+            {{if .PostsPage.HasPrevious}}
+            <li><a href="{{ .GetPreviousUrl }}">{{ .GetPreviousNumber }}</a></li>
+            {{end}}
+            <li>{{ .Number }}</li>
+            {{if .PostsPage.HasNext}}
+            <li><a href="{{ .GetNextUrl }}">{{ .GetNextNumber }}</a></li>
+            {{end}}
+        </ul>
+    </nav>
+{{end}}
