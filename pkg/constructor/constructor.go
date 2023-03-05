@@ -14,6 +14,8 @@ import (
 
     "github.com/dotoscat/veletagen/pkg/manager"
     "github.com/dotoscat/veletagen/pkg/common"
+
+    //"github.com/gomarkdown/markdown"
 )
 
 //go:embed templates/base.html templates/post.html
@@ -24,6 +26,7 @@ var postsPageTemplate embed.FS
 
 type Website struct {
     Config manager.Config
+    basePath string
     // categories, pages, scripts, styles...
 }
 
@@ -95,11 +98,13 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
         filename, _ := strings.CutSuffix(aPost.Filename, "md")
         postUrl := strings.Join([]string{"/posts", filename + "html"}, "/")
         webpage := NewWebpage(website, postUrl)
+        srcPath := filepath.Join(website.basePath, aPost.Filename)
         postWebpage := PostWebpage{
             Webpage: webpage,
             Post: aPost,
+            src: srcPath,
         }
-        //log.Println("webPost:", postWebpage)
+        log.Println("postWebpage: ", postWebpage)
         postWebpages = append(postWebpages, postWebpage)
         // log.Println("aPost:", aPost)
     }
@@ -116,6 +121,7 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
 type PostWebpage struct {
     Webpage
     Post manager.Post
+    src string
 }
 
 func (pw PostWebpage) Content() string {
@@ -145,7 +151,7 @@ func Construct(db *sql.DB, basePath string) error {
     }
     log.Println("config base:", config)
 
-    website := Website{Config: config}
+    website := Website{Config: config, basePath: basePath}
 
     outputPath := config.OutputPath
 
@@ -182,9 +188,9 @@ func Construct(db *sql.DB, basePath string) error {
             return err
         } else {
             postsPageWebpage := NewPostsPageWebpage(website, postsPage)
-            log.Println("postsPageWebpage Number: ", postsPageWebpage.PostsPage.Number)
-            log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
-            log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
+            // log.Println("postsPageWebpage Number: ", postsPageWebpage.PostsPage.Number)
+            // log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
+            // log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
             // Render posts from postsPage
             log.Println("Posts from postsPageWebpage: ", postsPageWebpage)
             for _, post := range postsPageWebpage.Posts {
