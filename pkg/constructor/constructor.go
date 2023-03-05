@@ -15,7 +15,7 @@ import (
     "github.com/dotoscat/veletagen/pkg/manager"
     "github.com/dotoscat/veletagen/pkg/common"
 
-    //"github.com/gomarkdown/markdown"
+    "github.com/gomarkdown/markdown"
 )
 
 //go:embed templates/base.html templates/post.html
@@ -98,7 +98,7 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
         filename, _ := strings.CutSuffix(aPost.Filename, "md")
         postUrl := strings.Join([]string{"/posts", filename + "html"}, "/")
         webpage := NewWebpage(website, postUrl)
-        srcPath := filepath.Join(website.basePath, aPost.Filename)
+        srcPath := filepath.Join(website.basePath, "posts", aPost.Filename)
         postWebpage := PostWebpage{
             Webpage: webpage,
             Post: aPost,
@@ -126,6 +126,12 @@ type PostWebpage struct {
 
 func (pw PostWebpage) Content() string {
     // The idea here is to render markdown to html and give it as output
+    if md, err := os.ReadFile(pw.src); err != nil {
+        return err.Error()
+    } else {
+        html := markdown.ToHTML(md, nil, nil)
+        return string(html)
+    }
     return "Post content"
 }
 
