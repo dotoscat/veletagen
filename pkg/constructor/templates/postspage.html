@@ -2,7 +2,7 @@
     <h1>Posts Page {{ .Number }}</h1>
     <ul>
     {{ range .Posts }}
-        <li>{{ . }}<a href="{{ .Url }}">{{ .Post.Id }}, {{ .Post.Title}} - {{ .Post.Date }}</a></li>
+        <li><a href="{{ .Url }}">{{ .Post.Id }}, {{ .Post.Title}} - {{ .Post.Date }}</a></li>
     {{ end }}
     </ul>
     <nav>

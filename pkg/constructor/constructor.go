@@ -27,7 +27,21 @@ var postsPageTemplate embed.FS
 type Website struct {
     Config manager.Config
     basePath string
+    Pages []PostWebpage
     // categories, pages, scripts, styles...
+}
+
+func NewPostWebpageFromPost(post manager.Post, root string, website Website) PostWebpage {
+    filename, _ := strings.CutSuffix(post.Filename, ".md")
+    postUrl := strings.Join([]string{root, filename + ".html"}, "/")
+    webpage := NewWebpage(website, postUrl)
+    srcPath := filepath.Join(website.basePath, root, post.Filename)
+    postWebpage := PostWebpage{
+        Webpage: webpage,
+        Post: post,
+        src: srcPath,
+    }
+    return postWebpage
 }
 
 type Webpage struct {
@@ -95,15 +109,7 @@ func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPag
     webpage := NewWebpage(website, url)
     postWebpages := make([]PostWebpage, 0)
     for _, aPost := range postsPage.Posts {
-        filename, _ := strings.CutSuffix(aPost.Filename, "md")
-        postUrl := strings.Join([]string{"/posts", filename + "html"}, "/")
-        webpage := NewWebpage(website, postUrl)
-        srcPath := filepath.Join(website.basePath, "posts", aPost.Filename)
-        postWebpage := PostWebpage{
-            Webpage: webpage,
-            Post: aPost,
-            src: srcPath,
-        }
+        postWebpage := NewPostWebpageFromPost(aPost, "/posts", website)
         log.Println("postWebpage: ", postWebpage)
         postWebpages = append(postWebpages, postWebpage)
         // log.Println("aPost:", aPost)
@@ -159,6 +165,15 @@ func Construct(db *sql.DB, basePath string) error {
 
     website := Website{Config: config, basePath: basePath}
 
+    if pages, err := manager.GetPages(db); err != nil {
+        return err
+    } else {
+        for _, page := range pages {
+            pageWebpage := NewPostWebpageFromPost(page, "/posts", website)
+            website.Pages = append(website.Pages, pageWebpage)
+        }
+    }
+
     outputPath := config.OutputPath
 
     branches := []string{
@@ -188,6 +203,11 @@ func Construct(db *sql.DB, basePath string) error {
     log.Println("templates", templates)
     // End loading templates
 
+    for _, page := range website.Pages {
+        if err := RenderTemplate(templates["post"], page.OutputPath, page); err != nil {
+            return err
+        }
+    }
     postsPages, err := manager.GetPostsPages(db, 2) //TODO: Change that 2 by the one from the Config
     for postsPages.Next() {
         if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
@@ -210,6 +230,7 @@ func Construct(db *sql.DB, basePath string) error {
             }
         }
     }
+
     log.Println("website", website)
     log.Println("postsPerPage:", postsPages)
 

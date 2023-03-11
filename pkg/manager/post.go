@@ -128,3 +128,28 @@ WHERE Tag.name = "page")`;
 
     return postsPages, nil
 }
+
+// GetPages returns posts with the tag "page"
+// These special posts are used as pages for navigation.
+func GetPages(db *sql.DB) ([]Post, error) {
+    const QUERY = `SELECT Post.id, filename, title, date FROM Post
+JOIN PostTag ON PostTag.post_id = Post.id
+JOIN Tag ON PostTag.tag_id = Tag.id
+WHERE Tag.name = "page"`
+    pages := make([]Post, 0)
+
+    if rows, err := db.Query(QUERY); err != nil {
+        return pages, err
+    } else {
+        defer rows.Close()
+        for rows.Next() {
+            if page, err := CreatePostFromRows(rows); err != nil {
+                return pages, err
+            } else {
+                pages = append(pages, page)
+            }
+        }
+    }
+
+    return pages, nil
+}

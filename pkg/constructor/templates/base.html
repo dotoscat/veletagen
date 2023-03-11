@@ -10,6 +10,11 @@
       <h1><a href="/">{{ .Website.Config.Title }}</a></h1>
     </header>
     <nav>
+      <ul>
+        {{ range .Website.Pages }}
+          <li><a href="{{ .Url }}">{{ .Post.Title }}</a></li>
+        {{ end }}
+      </ul>
     <!--Pages-->
     </nav>
     <main>
