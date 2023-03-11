@@ -31,7 +31,7 @@ type Website struct {
     // categories, pages, scripts, styles...
 }
 
-func NewPostWebpageFromPost(post manager.Post, root string, website Website) PostWebpage {
+func NewPostWebpageFromPost(post manager.Post, root string, website *Website) PostWebpage {
     filename, _ := strings.CutSuffix(post.Filename, ".md")
     postUrl := strings.Join([]string{root, filename + ".html"}, "/")
     webpage := NewWebpage(website, postUrl)
@@ -45,12 +45,12 @@ func NewPostWebpageFromPost(post manager.Post, root string, website Website) Pos
 }
 
 type Webpage struct {
-    Website Website
+    Website *Website
     Url string // Normalize to write output
     OutputPath string
 }
 
-func NewWebpage(website Website, url string) Webpage {
+func NewWebpage(website *Website, url string) Webpage {
     return Webpage{
         Website: website,
         Url: url,
@@ -98,7 +98,7 @@ func (ppw PostsPageWebpage) Number() int64 {
     return ppw.PostsPage.Number + 1
 }
 
-func NewPostsPageWebpage (website Website, postsPage manager.PostsPage) PostsPageWebpage {
+func NewPostsPageWebpage (website *Website, postsPage manager.PostsPage) PostsPageWebpage {
     var url string
     if postsPage.Number == 0 {
         url = "index.html"
@@ -169,7 +169,7 @@ func Construct(db *sql.DB, basePath string) error {
         return err
     } else {
         for _, page := range pages {
-            pageWebpage := NewPostWebpageFromPost(page, "/posts", website)
+            pageWebpage := NewPostWebpageFromPost(page, "/posts", &website)
             website.Pages = append(website.Pages, pageWebpage)
         }
     }
@@ -213,7 +213,7 @@ func Construct(db *sql.DB, basePath string) error {
         if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
             return err
         } else {
-            postsPageWebpage := NewPostsPageWebpage(website, postsPage)
+            postsPageWebpage := NewPostsPageWebpage(&website, postsPage)
             // log.Println("postsPageWebpage Number: ", postsPageWebpage.PostsPage.Number)
             // log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
             // log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
