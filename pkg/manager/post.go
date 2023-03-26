@@ -77,6 +77,19 @@ type Post struct {
     Date time.Time
 }
 
+func GetPostByFilename (db *sql.DB, filename string) (Post, error) {
+    const QUERY = `SELECT id, filename, title, date FROM Post WHERE filename = ?`
+    post := Post{}
+    row := db.QueryRow(QUERY, filename)
+    if err := row.Err(); err != nil {
+        return post, err
+    }
+    if err := row.Scan(&post.id, &post.Filename, &post.Title, &post.Date); err != nil {
+        return post, err
+    }
+    return post, nil
+}
+
 func (p Post) Id() int64 {
     return p.id
 }
@@ -94,6 +107,12 @@ func CreatePostFromRows(rows *sql.Rows) (Post, error) {
     log.Println("CreatePostFromRows: ", post)
 
     return post, nil
+}
+
+func UpdatePostTitleByFilename(db *sql.DB, filename, title string) error {
+    const QUERY = `UPDATE Post SET title = ? WHERE filename = ?`
+    _, err := db.Exec(QUERY, title, filename)
+    return err
 }
 
 type PostsPage struct {

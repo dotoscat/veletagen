@@ -126,7 +126,12 @@ func main() {
         if err := manager.SetTitle(db, setTitle); err != nil {
             log.Fatal(err)
         }
+    } else if setTitle != "" && post != "" {
+        if err := manager.UpdatePostTitleByFilename(db, post, setTitle); err != nil {
+            log.Fatal(err)
+        }
     }
+
     if getTitle == true && post == "" {
         log.Println("Call function to get title to target: ", target)
         log.Println("Path DB: ", manager.GetPathDB(target))
@@ -134,6 +139,12 @@ func main() {
             log.Fatal(err)
         } else {
             fmt.Printf("title:%v\n", title)
+        }
+    } else if getTitle == true && post != "" {
+        if postObject, err := manager.GetPostByFilename(db, post); err != nil {
+            log.Fatal(err)
+        } else {
+            fmt.Printf("title:%v\n", postObject.Title)
         }
     }
 
