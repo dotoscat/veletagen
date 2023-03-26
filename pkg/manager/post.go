@@ -9,8 +9,12 @@ import (
     // "github.com/dotoscat/veletagen/pkg/common"
 )
 
-func AddPost(db *sql.DB, filename string) error {
-    return InsertStringInto(db, "Post", "filename", filename)
+func AddPost(db *sql.DB, filename, title string) error {
+    const QUERY = "INSERT INTO Post (filename, title) VALUES (?, ?)"
+    if _, err := db.Exec(QUERY, filename, title); err != nil {
+        return err
+    }
+    return nil
 }
 
 func RemovePost(db *sql.DB, filename string) error {

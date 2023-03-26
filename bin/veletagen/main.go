@@ -54,8 +54,8 @@ func main() {
     flag.StringVar(&init, "init", "", "init <path>.")
     flag.StringVar(&target, "target", "", "target <path>.")
 
-    flag.BoolVar(&getTitle, "get-title", false, "Get title used for building.")
-    flag.StringVar(&setTitle, "set-title", "", "Set the title to be used for building.")
+    flag.BoolVar(&getTitle, "get-title", false, "Get title used for building or post.")
+    flag.StringVar(&setTitle, "set-title", "", "Set the title to be used for building or post.")
 
     flag.BoolVar(&getPostsPerPage, "get-posts-per-page", false, "Get the number of posts per page.")
     flag.Int64Var(&setPostsPerPage, "set-posts-per-page", 0, "Set the number of posts per page.")
@@ -122,12 +122,12 @@ func main() {
         return
     }
 
-    if setTitle != "" {
+    if setTitle != "" && post == "" {
         if err := manager.SetTitle(db, setTitle); err != nil {
             log.Fatal(err)
         }
     }
-    if getTitle == true {
+    if getTitle == true && post == "" {
         log.Println("Call function to get title to target: ", target)
         log.Println("Path DB: ", manager.GetPathDB(target))
         if title, err := manager.GetTitle(db); err != nil {
@@ -200,7 +200,11 @@ func main() {
     }
 
     if addPost != "" {
-        if err := manager.AddPost(db, addPost); err != nil {
+        if setTitle == "" {
+            fmt.Printf("Please, set a title for post '%v'", addPost)
+            return
+        }
+        if err := manager.AddPost(db, addPost, setTitle); err != nil {
             log.Fatal(err)
         }
     } else if removePost != "" {
