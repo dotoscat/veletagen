@@ -28,6 +28,7 @@ type Website struct {
     Config manager.Config
     basePath string
     Pages []PostWebpage
+    Styles []string
     // categories, pages, scripts, styles...
 }
 
@@ -155,6 +156,21 @@ func RenderTemplate(tmpl *template.Template, outputPath string, data any) error 
     return nil
 }
 
+func BuildStylesPath(db *sql.DB, path string) ([]string, error) {
+    paths := make([]string, 0)
+    var styles []string
+    var err error
+    styles, err = manager.GetCSS(db)
+    if err != nil {
+        return paths, err
+    }
+    for _, style := range styles {
+        path := strings.Join([]string{path, style}, "/")
+        paths = append(paths, path)
+    }
+    return paths, nil
+}
+
 func Construct(db *sql.DB, basePath string) error {
     var config manager.Config
     var err error
@@ -163,7 +179,20 @@ func Construct(db *sql.DB, basePath string) error {
     }
     log.Println("config base:", config)
 
-    website := Website{Config: config, basePath: basePath}
+    var stylesPath []string
+
+    stylesPath, err = BuildStylesPath(db, "/assets/css")
+    if err != nil {
+        return err
+    }
+
+    log.Println("stylesPath", stylesPath)
+
+    website := Website{
+        Config: config,
+        basePath: basePath,
+        Styles: stylesPath,
+    }
 
     if pages, err := manager.GetPages(db); err != nil {
         return err
@@ -179,8 +208,20 @@ func Construct(db *sql.DB, basePath string) error {
     branches := []string{
             "posts",
             "pages",
+            "assets/css",
     }
     common.CreateTree(outputPath, branches)
+
+    // Copy assets
+    // styles
+    for _, style := range website.Styles {
+        srcStyle := filepath.Join(basePath, style)
+        dstStyle := filepath.Join(outputPath, style)
+        log.Println("Copy from:", srcStyle, ";to:", dstStyle)
+        if err := common.CopyFile(srcStyle, dstStyle); err != nil {
+            log.Fatal(err)
+        }
+    }
 
     // Load templates
     templates := make(map[string]*template.Template)
@@ -208,7 +249,7 @@ func Construct(db *sql.DB, basePath string) error {
             return err
         }
     }
-    postsPages, err := manager.GetPostsPages(db, 2) //TODO: Change that 2 by the one from the Config
+    postsPages, err := manager.GetPostsPages(db, config.PostsPerPage)
     for postsPages.Next() {
         if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
             return err
