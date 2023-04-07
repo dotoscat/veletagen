@@ -50,7 +50,8 @@ func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
     (SELECT PostTag.post_id FROM PostTag
     JOIN Tag ON PostTag.tag_id = Tag.id
     WHERE Tag.name = "page")
-    LIMIT %v OFFSET %v`;
+    ORDER BY date DESC
+    LIMIT %v OFFSET %v`
     offset := pp.postsPerPage*pp.currentPage
     query := fmt.Sprintf(QUERY, pp.postsPerPage, offset)
 
