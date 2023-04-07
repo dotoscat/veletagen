@@ -313,7 +313,7 @@ func Construct(db *sql.DB, basePath string) error {
                 for _, imagePath := range post.ImagesPath() {
                     log.Println("Copy this image:", imagePath)
                     imageSrc := filepath.Join(basePath, imagePath)
-                    imageDst := filepath.Join(outputPath, "assets/images", imagePath)
+                    imageDst := filepath.Join(outputPath, imagePath)
                     if err := common.CopyFile(imageSrc, imageDst); err != nil {
                         log.Fatal(err)
                     }
