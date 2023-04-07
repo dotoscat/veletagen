@@ -29,6 +29,7 @@ import (
     "github.com/dotoscat/veletagen/pkg/common"
 
     "github.com/gomarkdown/markdown"
+    "github.com/gomarkdown/markdown/ast"
 )
 
 //go:embed templates/base.html templates/post.html
@@ -50,10 +51,35 @@ func NewPostWebpageFromPost(post manager.Post, root string, website *Website) Po
     postUrl := strings.Join([]string{root, filename + ".html"}, "/")
     webpage := NewWebpage(website, postUrl)
     srcPath := filepath.Join(website.basePath, root, post.Filename)
+
+    imagesPath := make([]string, 0)
+
+    if md, err := os.ReadFile(srcPath); err != nil {
+        log.Println(err) // Maybe change this to return an error too?
+    } else {
+        root := markdown.Parse(md, nil)
+        log.Println("Check whether", srcPath, "has images...")
+        ast.WalkFunc(root, func(node ast.Node, entering bool) ast.WalkStatus {
+            if entering == false {
+                goto next
+            }
+            switch t := node.(type) {
+                case *ast.Image:
+                    src := string(t.Destination)
+                    imagesPath = append(imagesPath, src)
+                    break
+            }
+            next:
+            return ast.GoToNext
+        })
+
+    }
+
     postWebpage := PostWebpage{
         Webpage: webpage,
         Post: post,
         src: srcPath,
+        imagesPath: imagesPath,
     }
     return postWebpage
 }
@@ -142,6 +168,11 @@ type PostWebpage struct {
     Webpage
     Post manager.Post
     src string
+    imagesPath []string
+}
+
+func (pw PostWebpage) ImagesPath() []string {
+    return pw.imagesPath
 }
 
 func (pw PostWebpage) Content() string {
@@ -222,6 +253,7 @@ func Construct(db *sql.DB, basePath string) error {
             "posts",
             "pages",
             "assets/css",
+            "assets/images",
     }
     common.CreateTree(outputPath, branches)
 
@@ -276,6 +308,15 @@ func Construct(db *sql.DB, basePath string) error {
             for _, post := range postsPageWebpage.Posts {
                 if err := RenderTemplate(templates["post"], post.OutputPath, post); err != nil {
                     return err
+                }
+                // Copy post images if any
+                for _, imagePath := range post.ImagesPath() {
+                    log.Println("Copy this image:", imagePath)
+                    imageSrc := filepath.Join(basePath, imagePath)
+                    imageDst := filepath.Join(outputPath, "assets/images", imagePath)
+                    if err := common.CopyFile(imageSrc, imageDst); err != nil {
+                        log.Fatal(err)
+                    }
                 }
             }
             // Render postsPage
