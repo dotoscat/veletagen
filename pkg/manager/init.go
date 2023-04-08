@@ -46,11 +46,13 @@ func OpenDatabase(path string) (*sql.DB, error) {
 
 var CSS_PATH string = filepath.Join("assets", "css")
 var SCRIPTS_PATH string = filepath.Join("assets", "scripts")
+var IMAGES_PATH string = filepath.Join("assets", "images")
 
 func CreateTree(path string) error {
     postsPath := filepath.Join(path, "posts")
     scriptsPath := filepath.Join(path, SCRIPTS_PATH)
     cssPath := filepath.Join(path, CSS_PATH)
+    imagesPath := filepath.Join(path, IMAGES_PATH)
     if err := os.MkdirAll(postsPath, fs.ModeDir); err != nil {
         return err
     }
@@ -58,6 +60,9 @@ func CreateTree(path string) error {
         return err
     }
     if err := os.MkdirAll(cssPath, fs.ModeDir); err != nil {
+        return err
+    }
+    if err := os.MkdirAll(imagesPath, fs.ModeDir); err != nil {
         return err
     }
     return nil
