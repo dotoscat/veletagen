@@ -294,7 +294,7 @@ func Construct(db *sql.DB, basePath string) error {
             return err
         }
     }
-    postsPages, err := manager.GetPostsPages(db, config.PostsPerPage)
+    postsPages, err := manager.GetPostsPages(db, config.PostsPerPage, "")
     for postsPages.Next() {
         if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
             return err

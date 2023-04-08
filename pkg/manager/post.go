@@ -38,6 +38,7 @@ type PostsPages struct{
     currentPage int64
     totalPages int64
     postsPerPage int64
+    category string
 }
 
 func (pp PostsPages) Next() bool {
@@ -52,23 +53,46 @@ func (pp *PostsPages) GetPostsFromCurrentPage(db *sql.DB) (PostsPage, error) {
     WHERE Tag.name = "page")
     ORDER BY date DESC
     LIMIT %v OFFSET %v`
+    const QUERY_CATEGORY = `SELECT Post.id, filename, title, date FROM Post
+JOIN PostCategory
+ON PostCategory.post_id = Post.id
+JOIN Category
+ON Category.id = PostCategory.category_id
+WHERE Post.id NOT IN
+(SELECT PostTag.post_id FROM PostTag
+JOIN Tag ON PostTag.tag_id = Tag.id
+WHERE Tag.name = "page")
+AND Category.name = ?
+ORDER BY date DESC
+LIMIT %v OFFSET %v;`
+
     offset := pp.postsPerPage*pp.currentPage
-    query := fmt.Sprintf(QUERY, pp.postsPerPage, offset)
+    var query string
+    var rows *sql.Rows
+    var err error
 
     posts := make([]Post, 0)
 
-    if rows, err := db.Query(query); err != nil {
-        return PostsPage{}, err
+    if pp.category == "" {
+        query = fmt.Sprintf(QUERY, pp.postsPerPage, offset)
+        rows, err = db.Query(query)
     } else {
-        defer rows.Close()
-        for rows.Next() {
-            var post Post
-            var err error
-            if post, err = CreatePostFromRows(rows); err != nil {
-                return PostsPage{}, err
-            }
-            posts = append(posts, post)
+        query = fmt.Sprintf(QUERY_CATEGORY, pp.postsPerPage, offset)
+        rows, err = db.Query(query, pp.category)
+    }
+    defer rows.Close()
+
+    if err != nil {
+        return PostsPage{}, err
+    }
+
+    for rows.Next() {
+        var post Post
+        var err error
+        if post, err = CreatePostFromRows(rows); err != nil {
+            return PostsPage{}, err
         }
+        posts = append(posts, post)
     }
 
     hasNext := pp.currentPage + 1 < pp.totalPages
@@ -136,19 +160,44 @@ type PostsPage struct {
     HasPrevious bool
 }
 
-func GetPostsPages(db *sql.DB, postsPerPage int64) (PostsPages, error) {
+func GetPostsPages(db *sql.DB, postsPerPage int64, category string) (PostsPages, error) {
     const COUNT_QUERY = `SELECT COUNT(*) AS total_posts
 FROM Post
 WHERE id NOT IN
 (SELECT PostTag.post_id FROM PostTag
 JOIN Tag ON PostTag.tag_id = Tag.id
-WHERE Tag.name = "page")`;
+WHERE Tag.name = "page")`
+    const COUNT_QUERY_CATEGORY = `
+    SELECT COUNT(*) AS total_posts
+FROM Post
+JOIN PostCategory
+ON PostCategory.post_id = Post.id
+JOIN Category
+ON Category.id = PostCategory.category_id
+WHERE Post.id NOT IN
+(SELECT PostTag.post_id FROM PostTag
+JOIN Tag ON PostTag.tag_id = Tag.id
+WHERE Tag.name = "page")
+AND Category.name = ?;`
+
+    query := COUNT_QUERY
+    if category != "" {
+        query = COUNT_QUERY_CATEGORY
+    }
 
     postsPages := PostsPages{
         postsPerPage: postsPerPage,
+        category: category,
     }
     var totalPosts int64
-    row := db.QueryRow(COUNT_QUERY)
+    var row *sql.Row
+
+    if category == "" {
+        row = db.QueryRow(query)
+    } else {
+        row = db.QueryRow(query, category)
+    }
+
     if row.Err() != nil {
         return postsPages, row.Err()
     }

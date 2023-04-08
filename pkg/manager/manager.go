@@ -73,3 +73,22 @@ func DoesStringExistIn(db *sql.DB, table, column, value string) (bool, error) {
     return exists, err
 }
 
+func GetCategories(db *sql.DB) ([]string, error) {
+    const QUERY = "SELECT name FROM Category"
+    categories := make([]string, 0)
+    rows, err := db.Query(QUERY)
+    defer rows.Close()
+    var name string
+    if err != nil {
+        return categories, nil
+    }
+    for rows.Next() {
+        if err := rows.Scan(&name); err != nil {
+            return categories, err
+        } else {
+            categories = append(categories, name)
+        }
+    }
+    return categories, nil
+}
+
