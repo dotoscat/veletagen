@@ -14,7 +14,6 @@
 package constructor
 
 import (
-    // "time"
     "database/sql"
     "log"
     "embed"
@@ -23,7 +22,7 @@ import (
     "path/filepath"
     "os"
     "text/template"
-//    "io/fs"
+    "net/url"
 
     "github.com/dotoscat/veletagen/pkg/manager"
     "github.com/dotoscat/veletagen/pkg/common"
@@ -43,7 +42,8 @@ type Website struct {
     basePath string
     Pages []PostWebpage
     Styles []string
-    // categories, pages, scripts, styles...
+    Categories map[string]string
+    // scripts
 }
 
 func NewPostWebpageFromPost(post manager.Post, root string, website *Website) PostWebpage {
@@ -102,6 +102,7 @@ type PostsPageWebpage struct {
     Webpage
     PostsPage manager.PostsPage
     Posts []PostWebpage
+    root string
 }
 
 func (ppw PostsPageWebpage) GetPreviousUrl() string {
@@ -111,18 +112,20 @@ func (ppw PostsPageWebpage) GetPreviousUrl() string {
     if ppw.PostsPage.Number - 1 <= 0  {
         return "/index.html"
     }
-    url := fmt.Sprintf("/pages/page%v.html", ppw.PostsPage.Number - 1 + 1)
+    path := strings.Join([]string{ppw.root, "page%v.html"}, "/")
+    url := fmt.Sprintf(path, ppw.PostsPage.Number - 1 + 1)
     return url
 }
 
 func (ppw PostsPageWebpage) GetNextUrl() string {
     if ppw.PostsPage.HasNext == false {
-       return ""
+        return ""
     }
     if ppw.PostsPage.Number == 0 { //index is page1
-        return "/pages/page2.html"
+        return strings.Join([]string{ppw.root, "page2.html"}, "/")
     }
-    url := fmt.Sprintf("/pages/page%v.html", ppw.PostsPage.Number + 2)
+    path := strings.Join([]string{ppw.root, "page%v.html"}, "/")
+    url := fmt.Sprintf(path, ppw.PostsPage.Number + 2)
     return url
 }
 
@@ -138,13 +141,13 @@ func (ppw PostsPageWebpage) Number() int64 {
     return ppw.PostsPage.Number + 1
 }
 
-func NewPostsPageWebpage (website *Website, postsPage manager.PostsPage) PostsPageWebpage {
+func NewPostsPageWebpage (website *Website, postsPage manager.PostsPage, root string) PostsPageWebpage {
     var url string
     if postsPage.Number == 0 {
         url = "index.html"
     } else {
         pageNumber := fmt.Sprintf("page%v.html", postsPage.Number + 1)
-        url = strings.Join([]string{"/pages", pageNumber}, "/")
+        url = strings.Join([]string{root, pageNumber}, "/")
     }
     webpage := NewWebpage(website, url)
     postWebpages := make([]PostWebpage, 0)
@@ -159,6 +162,7 @@ func NewPostsPageWebpage (website *Website, postsPage manager.PostsPage) PostsPa
         webpage,
         postsPage,
         postWebpages,
+        root,
     }
     //log.Println("webpage posts page:", webpage)
     return postsPageWebpage
@@ -236,6 +240,7 @@ func Construct(db *sql.DB, basePath string) error {
         Config: config,
         basePath: basePath,
         Styles: stylesPath,
+        Categories: make(map[string]string),
     }
 
     if pages, err := manager.GetPages(db); err != nil {
@@ -247,14 +252,34 @@ func Construct(db *sql.DB, basePath string) error {
         }
     }
 
-    outputPath := config.OutputPath
-
     branches := []string{
             "posts",
             "pages",
             "assets/css",
             "assets/images",
     }
+
+    var categories []string
+    categories, err = manager.GetCategories(db)
+
+    if err != nil {
+        return err
+    }
+    for _, category := range categories {
+        log.Println("category:", category)
+        branches = append(branches, category)
+        var categoryUrl string
+        var err error
+        categoryUrl, err = url.JoinPath("/", category, "index.html")
+        if err != nil {
+            return err
+        }
+        log.Println("category url:", categoryUrl)
+        website.Categories[category] = categoryUrl
+    }
+
+    outputPath := config.OutputPath
+
     common.CreateTree(outputPath, branches)
 
     // Copy assets
@@ -299,7 +324,7 @@ func Construct(db *sql.DB, basePath string) error {
         if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
             return err
         } else {
-            postsPageWebpage := NewPostsPageWebpage(&website, postsPage)
+            postsPageWebpage := NewPostsPageWebpage(&website, postsPage, "/pages")
             // log.Println("postsPageWebpage Number: ", postsPageWebpage.PostsPage.Number)
             // log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
             // log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
@@ -325,6 +350,8 @@ func Construct(db *sql.DB, basePath string) error {
             }
         }
     }
+
+    // Render categories pages
 
     log.Println("website", website)
     log.Println("postsPerPage:", postsPages)

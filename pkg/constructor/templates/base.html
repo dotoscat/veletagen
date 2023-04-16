@@ -20,6 +20,13 @@
       </ul>
     <!--Pages-->
     </nav>
+    <nav>
+      <ul>
+      {{ range $category, $url := .Website.Categories }}
+      <li><a href="{{ $url }}">{{ $category }}</a></li>
+      {{ end }}
+      </ul>
+    </nav>
     <main>
     {{block "main" .}}{{end}}
     </main>
