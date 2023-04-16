@@ -157,6 +157,10 @@ func (ppw PostsPageWebpage) Number() int64 {
     return ppw.PostsPage.Number + 1
 }
 
+func (ppw PostsPageWebpage) Category() string {
+    return ppw.PostsPage.Category
+}
+
 func NewPostsPageWebpage (website *Website, postsPage manager.PostsPage, root string) PostsPageWebpage {
     var webpageUrl string
     if postsPage.Number == 0 {

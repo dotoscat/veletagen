@@ -1,5 +1,5 @@
 {{block "main" .}}
-    <h1>Posts Page {{ .Number }}</h1>
+    <h2>{{ .Category }} - {{ .Number }}</h2>
     <ul>
     {{ range .Posts }}
         <li><a href="{{ .Url }}">{{ .Post.Title}} - {{ .Post.Date }}</a></li>

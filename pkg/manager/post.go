@@ -103,6 +103,7 @@ LIMIT %v OFFSET %v;`
         Posts: posts,
         HasNext: hasNext,
         HasPrevious: hasPrevious,
+        Category: pp.category,
     }
     pp.currentPage++
     return postsPage, nil
@@ -158,6 +159,7 @@ type PostsPage struct {
     Posts []Post
     HasNext bool
     HasPrevious bool
+    Category string
 }
 
 func GetPostsPages(db *sql.DB, postsPerPage int64, category string) (PostsPages, error) {
