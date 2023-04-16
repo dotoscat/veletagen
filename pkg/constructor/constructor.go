@@ -106,15 +106,25 @@ type PostsPageWebpage struct {
 }
 
 func (ppw PostsPageWebpage) GetPreviousUrl() string {
+    var err error
     if ppw.PostsPage.HasPrevious == false {
        return ""
     }
     if ppw.PostsPage.Number - 1 <= 0  {
-        return "/index.html"
+        var previousUrl string
+        previousUrl, err = url.JoinPath(ppw.root, "index.html")
+        if err != nil {
+            log.Fatal(err)
+        }
+        return previousUrl
     }
-    path := strings.Join([]string{ppw.root, "page%v.html"}, "/")
-    url := fmt.Sprintf(path, ppw.PostsPage.Number - 1 + 1)
-    return url
+    var previousUrl string
+    page := fmt.Sprintf("page%v.html", ppw.PostsPage.Number)
+    previousUrl, err = url.JoinPath(ppw.root, page)
+    if err != nil {
+        log.Fatal(err)
+    }
+    return previousUrl
 }
 
 func (ppw PostsPageWebpage) GetNextUrl() string {
@@ -122,11 +132,17 @@ func (ppw PostsPageWebpage) GetNextUrl() string {
         return ""
     }
     if ppw.PostsPage.Number == 0 { //index is page1
-        return strings.Join([]string{ppw.root, "page2.html"}, "/")
+        nextUrl, _ := url.JoinPath(ppw.root, "page2.html")
+        return nextUrl
     }
-    path := strings.Join([]string{ppw.root, "page%v.html"}, "/")
-    url := fmt.Sprintf(path, ppw.PostsPage.Number + 2)
-    return url
+    var err error
+    var nextUrl string
+    page := fmt.Sprintf("page%v.html", ppw.PostsPage.Number + 2)
+    nextUrl, err = url.JoinPath(ppw.root, page)
+    if err != nil {
+        log.Fatal(err)
+    }
+    return nextUrl
 }
 
 func (ppw PostsPageWebpage) GetPreviousNumber() int64 {
@@ -142,14 +158,18 @@ func (ppw PostsPageWebpage) Number() int64 {
 }
 
 func NewPostsPageWebpage (website *Website, postsPage manager.PostsPage, root string) PostsPageWebpage {
-    var url string
+    var webpageUrl string
     if postsPage.Number == 0 {
-        url = "index.html"
+        var err error
+        webpageUrl, err = url.JoinPath(root, "index.html")
+        if err != nil {
+            log.Fatal(err)
+        }
     } else {
         pageNumber := fmt.Sprintf("page%v.html", postsPage.Number + 1)
-        url = strings.Join([]string{root, pageNumber}, "/")
+        webpageUrl = strings.Join([]string{root, pageNumber}, "/")
     }
-    webpage := NewWebpage(website, url)
+    webpage := NewWebpage(website, webpageUrl)
     postWebpages := make([]PostWebpage, 0)
     for _, aPost := range postsPage.Posts {
         postWebpage := NewPostWebpageFromPost(aPost, "/posts", website)
@@ -324,7 +344,7 @@ func Construct(db *sql.DB, basePath string) error {
         if postsPage, err := postsPages.GetPostsFromCurrentPage(db); err != nil {
             return err
         } else {
-            postsPageWebpage := NewPostsPageWebpage(&website, postsPage, "/pages")
+            postsPageWebpage := NewPostsPageWebpage(&website, postsPage, "/")
             // log.Println("postsPageWebpage Number: ", postsPageWebpage.PostsPage.Number)
             // log.Println("postsPageWebpage HasPrevious: ", postsPageWebpage.PostsPage.HasPrevious)
             // log.Println("postsPageWebpage HasNext: ", postsPageWebpage.PostsPage.HasNext)
@@ -352,6 +372,31 @@ func Construct(db *sql.DB, basePath string) error {
     }
 
     // Render categories pages
+
+    for _, category := range categories {
+        var postsPages manager.PostsPages
+        postsPages, err = manager.GetPostsPages(db, config.PostsPerPage, category)
+        if err != nil {
+            return err
+        }
+        for postsPages.Next() {
+            var categoryUrl string
+            var postsPage manager.PostsPage
+            postsPage, err = postsPages.GetPostsFromCurrentPage(db)
+            categoryUrl, err = url.JoinPath("/", category)
+            if err != nil {
+                return err
+            }
+            postsPageWebpage := NewPostsPageWebpage(&website, postsPage, categoryUrl)
+            log.Println("category post page", postsPageWebpage)
+            if err := RenderTemplate(
+                templates["postsPage"],
+                postsPageWebpage.OutputPath,
+                postsPageWebpage); err != nil {
+                    return err
+                }
+        }
+    }
 
     log.Println("website", website)
     log.Println("postsPerPage:", postsPages)
