@@ -104,6 +104,10 @@ func main() {
 
     flag.Parse()
 
+    if version == true {
+        fmt.Printf("version:%v\n",common.VERSION)
+    }
+
     if init != "" {
         log.Println("Init at: ", init)
         dbPath := manager.GetPathDB(init)
@@ -289,7 +293,4 @@ func main() {
         }
     }
 
-    if version == true {
-        fmt.Printf("version:%v\n",common.VERSION)
-    }
 }
