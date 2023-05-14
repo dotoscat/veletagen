@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Document code.
 - Reorganize project layout.
 
+## [0.2] - 2023-05-14
+
+### Fixed
+
+* Change site title when you are adding a new post.
+
+### Added
+
+* Version option to check current version.
+
+### Removed
+
+* Output "END" at the end of the program.
+
 ## [0.1] - 2023-04-23
 
 ### Added
