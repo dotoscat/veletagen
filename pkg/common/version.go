@@ -13,4 +13,4 @@
 //   limitations under the License.package common
 package common
 
-const VERSION = "0.1"
+const VERSION = "0.2"
