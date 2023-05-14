@@ -144,7 +144,7 @@ func main() {
         return
     }
 
-    if setTitle != "" && (post == "" || addPost == ""){
+    if setTitle != "" && post == "" && addPost == ""{
         if err := manager.SetTitle(db, setTitle); err != nil {
             log.Fatal(err)
         }
