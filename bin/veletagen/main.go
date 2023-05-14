@@ -63,6 +63,8 @@ func main() {
     var getCategories bool
     var removeCategories common.Tags
 
+    var version bool
+
     flag.BoolVar(&build, "build", false, "Start building the site specified by target.")
 
     flag.StringVar(&init, "init", "", "init <path>.")
@@ -97,6 +99,8 @@ func main() {
     flag.Var(&addCategories, "add-categories", "Add categories separated by ','")
     flag.Var(&removeCategories, "remove-categories", "Remove categories separated by ','")
     flag.BoolVar(&getCategories, "get-categories", false, "Gets categories related with this post.")
+
+    flag.BoolVar(&version, "version", false, "Check veletagen version.")
 
     flag.Parse()
 
@@ -285,5 +289,7 @@ func main() {
         }
     }
 
-    log.Println("END")
+    if version == true {
+        fmt.Printf("version:%v\n",common.VERSION)
+    }
 }
