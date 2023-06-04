@@ -98,6 +98,25 @@ func SetLang(db *sql.DB, lang string) error {
     return err
 }
 
+func GetLicense(db *sql.DB) (string, error) {
+    const QUERY = "SELECT license FROM Config"
+    var license string
+    row := db.QueryRow(QUERY)
+    if row.Err() != nil {
+        return "", row.Err()
+    }
+    if err := row.Scan(&license); err != nil {
+        return "", err
+    }
+    return license, nil
+}
+
+func SetLicense(db *sql.DB, license string) error {
+    const QUERY = "UPDATE Config SET license = ?"
+    _, err := db.Exec(QUERY, license)
+    return err
+}
+
 func AddCSS (db *sql.DB, filename string) error {
     return InsertStringInto(db, "ConfigCSS", "filename", filename)
 }

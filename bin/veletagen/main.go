@@ -65,6 +65,9 @@ func main() {
 
     var version bool
 
+    var setLicense string
+    var getLicense bool
+
     flag.BoolVar(&build, "build", false, "Start building the site specified by target.")
 
     flag.StringVar(&init, "init", "", "init <path>.")
@@ -99,6 +102,9 @@ func main() {
     flag.Var(&addCategories, "add-categories", "Add categories separated by ','")
     flag.Var(&removeCategories, "remove-categories", "Remove categories separated by ','")
     flag.BoolVar(&getCategories, "get-categories", false, "Gets categories related with this post.")
+
+    flag.StringVar(&setLicense, "set-license", "", "Set a license for this website.")
+    flag.BoolVar(&getLicense, "get-license", false, "Gets the current license for the website.")
 
     flag.BoolVar(&version, "version", false, "Check veletagen version.")
 
@@ -142,6 +148,19 @@ func main() {
             log.Fatal(err)
         }
         return
+    }
+
+    if setLicense != "" {
+        if err := manager.SetLicense(db, setLicense); err != nil {
+            log.Fatal(err)
+        }
+    }
+    if getLicense == true {
+        if license, err := manager.GetLicense(db); err != nil {
+            log.Fatal(err)
+        } else {
+            fmt.Printf("license:%v\n", license)
+        }
     }
 
     if setTitle != "" && post == "" && addPost == ""{
