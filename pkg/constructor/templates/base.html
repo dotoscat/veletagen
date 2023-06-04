@@ -14,6 +14,7 @@
     </header>
     <nav>
       <ul>
+        <li><a href="/">/</a></li>
         {{ range .Website.Pages }}
           <li><a href="{{ .Url }}">{{ .Post.Title }}</a></li>
         {{ end }}
