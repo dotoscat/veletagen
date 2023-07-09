@@ -12,7 +12,8 @@
     <header>
       <h1><a href="/">{{ .Website.Config.Title }}</a></h1>
     </header>
-    <nav>
+    <nav id="nav-container">
+    <nav id="pages">
       <ul>
         <li><a href="/">/</a></li>
         {{ range .Website.Pages }}
@@ -21,12 +22,13 @@
       </ul>
     <!--Pages-->
     </nav>
-    <nav>
+    <nav id="categories">
       <ul>
       {{ range $category, $url := .Website.Categories }}
       <li><a href="{{ $url }}">{{ $category }}</a></li>
       {{ end }}
       </ul>
+    </nav>
     </nav>
     <main>
     {{block "main" .}}{{end}}

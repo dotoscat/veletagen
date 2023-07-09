@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Document code.
 - Reorganize project layout.
+- From the template separate the navegator by classes. Pages and categories.
 
 ## [0.3] - 2023-7-9
 
