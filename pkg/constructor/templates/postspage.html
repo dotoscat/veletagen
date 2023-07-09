@@ -1,11 +1,11 @@
 {{block "main" .}}
     <h2>{{ .Category }} - {{ .Number }}</h2>
-    <ul>
+    <ul id="posts">
     {{ range .Posts }}
         <li><a href="{{ .Url }}">{{ .Post.Title}} - {{ .Post.Date }}</a></li>
     {{ end }}
     </ul>
-    <nav>
+    <nav id="posts-pages-nav">
         <ul>
             {{if .PostsPage.HasPrevious}}
             <li><a href="{{ .GetPreviousUrl }}">{{ .GetPreviousNumber }}</a></li>
