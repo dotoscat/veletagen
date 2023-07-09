@@ -9,9 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Document code.
 - Reorganize project layout.
-- From the template separate the navegator by classes. Pages and categories.
 
-## [0.3] - 2023-7-9
+## [0.4] - 2023-7-9
+
+### Added
+
+* ids to navigators.
+* Put top navigators inside a nav tag.
+
+### Fixed
+
+* Date for v0.3 onm Changelog.
+
+## [0.3] - 2023-7-8
 
 ### Added
 
